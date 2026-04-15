@@ -1,0 +1,20 @@
+src/:
+  uncode/:
+    cli.py:
+      main:
+      cmd_map:
+    extract.py:
+      ClassInfo:
+        name:
+        attributes:
+        methods:
+      ModuleInfo:
+        rel_path:
+        classes:
+        functions:
+      is_public:
+      extract_module:
+      walk_source:
+    namespace_map.py:
+      build_map:
+      render_map:
