@@ -22,3 +22,8 @@ repos:
         entry: uvx ty check src tests
         language: system
         pass_filenames: false
+      - id: uncoded-sync
+        name: uncoded sync
+        entry: uncoded sync src tests
+        language: system
+        pass_filenames: false
