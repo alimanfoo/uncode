@@ -11,12 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/ruff-action@v3
-        with:
-          args: check
-      - uses: astral-sh/ruff-action@v3
-        with:
-          args: format --check
+      - uses: astral-sh/setup-uv@v6
+      - run: uv python install 3.12
+      - run: uv sync --extra dev
+      - run: SKIP=uncoded-sync uv run pre-commit run --all-files
+      - run: uv run uncoded check src tests
 
   test:
     runs-on: ubuntu-latest
