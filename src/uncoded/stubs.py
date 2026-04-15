@@ -1,0 +1,242 @@
+"""Generate .pyi stub files for agent navigation."""
+
+import ast
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from uncoded.extract import is_public, iter_source_files
+
+
+@dataclass
+class StubParam:
+    """A function parameter with name and optional type annotation."""
+
+    name: str
+    annotation: str | None = None
+
+
+@dataclass
+class StubFunction:
+    """A public function or method with signature and line range."""
+
+    name: str
+    params: list[StubParam] = field(default_factory=list)
+    return_annotation: str | None = None
+    docstring_excerpt: str | None = None
+    start_line: int = 0
+    end_line: int = 0
+    is_async: bool = False
+
+
+@dataclass
+class StubClass:
+    """A public class with its members and line range."""
+
+    name: str
+    bases: list[str] = field(default_factory=list)
+    docstring_excerpt: str | None = None
+    start_line: int = 0
+    end_line: int = 0
+    attributes: list[StubParam] = field(default_factory=list)
+    methods: list[StubFunction] = field(default_factory=list)
+
+
+@dataclass
+class StubModule:
+    """Public API surface of a single Python module."""
+
+    rel_path: str
+    imports: list[str] = field(default_factory=list)
+    classes: list[StubClass] = field(default_factory=list)
+    functions: list[StubFunction] = field(default_factory=list)
+
+
+def _first_sentence(node: ast.AST) -> str | None:
+    """Return the first sentence of a node's docstring, or None."""
+    docstring = ast.get_docstring(node)
+    if not docstring:
+        return None
+    text = docstring.strip()
+    match = re.match(r"(.+?\.)\s", text + " ")
+    if match:
+        return match.group(1)
+    return text.split("\n")[0].strip()
+
+
+def _extract_params(args: ast.arguments) -> list[StubParam]:
+    """Extract parameters from a function argument node, without defaults."""
+    params: list[StubParam] = []
+
+    for arg in args.posonlyargs:
+        annotation = ast.unparse(arg.annotation) if arg.annotation else None
+        params.append(StubParam(name=arg.arg, annotation=annotation))
+    if args.posonlyargs:
+        params.append(StubParam(name="/"))
+
+    for arg in args.args:
+        annotation = ast.unparse(arg.annotation) if arg.annotation else None
+        params.append(StubParam(name=arg.arg, annotation=annotation))
+
+    if args.vararg:
+        annotation = ast.unparse(args.vararg.annotation) if args.vararg.annotation else None
+        params.append(StubParam(name=f"*{args.vararg.arg}", annotation=annotation))
+    elif args.kwonlyargs:
+        params.append(StubParam(name="*"))
+
+    for arg in args.kwonlyargs:
+        annotation = ast.unparse(arg.annotation) if arg.annotation else None
+        params.append(StubParam(name=arg.arg, annotation=annotation))
+
+    if args.kwarg:
+        annotation = ast.unparse(args.kwarg.annotation) if args.kwarg.annotation else None
+        params.append(StubParam(name=f"**{args.kwarg.arg}", annotation=annotation))
+
+    return params
+
+
+def _extract_function(
+    node: ast.FunctionDef | ast.AsyncFunctionDef,
+) -> StubFunction:
+    """Build a StubFunction from a function or method AST node."""
+    return StubFunction(
+        name=node.name,
+        params=_extract_params(node.args),
+        return_annotation=ast.unparse(node.returns) if node.returns else None,
+        docstring_excerpt=_first_sentence(node),
+        start_line=node.lineno,
+        end_line=node.end_lineno,
+        is_async=isinstance(node, ast.AsyncFunctionDef),
+    )
+
+
+def _extract_class(node: ast.ClassDef) -> StubClass:
+    """Build a StubClass from a class AST node."""
+    bases = [ast.unparse(b) for b in node.bases]
+
+    attributes: list[StubParam] = []
+    methods: list[StubFunction] = []
+
+    for child in ast.iter_child_nodes(node):
+        if (
+            isinstance(child, ast.AnnAssign)
+            and isinstance(child.target, ast.Name)
+            and is_public(child.target.id)
+        ):
+            annotation = ast.unparse(child.annotation) if child.annotation else None
+            attributes.append(StubParam(name=child.target.id, annotation=annotation))
+        elif isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)) and is_public(
+            child.name
+        ):
+            methods.append(_extract_function(child))
+
+    return StubClass(
+        name=node.name,
+        bases=bases,
+        docstring_excerpt=_first_sentence(node),
+        start_line=node.lineno,
+        end_line=node.end_lineno,
+        attributes=attributes,
+        methods=methods,
+    )
+
+
+def extract_stub(source: str, rel_path: str) -> StubModule:
+    """Parse Python source and extract the public API surface."""
+    tree = ast.parse(source)
+    imports: list[str] = []
+    classes: list[StubClass] = []
+    functions: list[StubFunction] = []
+
+    for node in ast.iter_child_nodes(tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            imports.append(ast.unparse(node))
+        elif isinstance(node, ast.ClassDef) and is_public(node.name):
+            classes.append(_extract_class(node))
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and is_public(
+            node.name
+        ):
+            functions.append(_extract_function(node))
+
+    return StubModule(rel_path=rel_path, imports=imports, classes=classes, functions=functions)
+
+
+def _render_param(p: StubParam) -> str:
+    if p.name in ("/", "*"):
+        return p.name
+    if p.annotation:
+        return f"{p.name}: {p.annotation}"
+    return p.name
+
+
+def _render_function(func: StubFunction, indent: str = "") -> list[str]:
+    params_str = ", ".join(_render_param(p) for p in func.params)
+    ret = f" -> {func.return_annotation}" if func.return_annotation else ""
+    prefix = "async def" if func.is_async else "def"
+    lines = [
+        f"{indent}{prefix} {func.name}({params_str}){ret}:  # L{func.start_line}-{func.end_line}"
+    ]
+    if func.docstring_excerpt:
+        lines.append(f'{indent}    """{func.docstring_excerpt}"""')
+    lines.append(f"{indent}    ...")
+    return lines
+
+
+def render_stub(module: StubModule) -> str:
+    """Render a StubModule as a .pyi file string."""
+    lines: list[str] = [f"# {module.rel_path}", ""]
+
+    if module.imports:
+        lines.extend(module.imports)
+        lines.append("")
+
+    for func in module.functions:
+        lines.extend(_render_function(func))
+        lines.append("")
+
+    for cls in module.classes:
+        bases_str = f"({', '.join(cls.bases)})" if cls.bases else ""
+        lines.append(
+            f"class {cls.name}{bases_str}:  # L{cls.start_line}-{cls.end_line}"
+        )
+        if cls.docstring_excerpt:
+            lines.append(f'    """{cls.docstring_excerpt}"""')
+        lines.append("")
+
+        for attr in cls.attributes:
+            if attr.annotation:
+                lines.append(f"    {attr.name}: {attr.annotation}")
+            else:
+                lines.append(f"    {attr.name}")
+        if cls.attributes:
+            lines.append("")
+
+        for method in cls.methods:
+            lines.extend(_render_function(method, indent="    "))
+            lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+DEFAULT_STUBS_OUTPUT = Path(".uncoded/stubs")
+
+
+def build_stubs(
+    source_root: Path,
+    base: Path | None = None,
+    output_dir: Path = DEFAULT_STUBS_OUTPUT,
+) -> None:
+    """Generate stub files for all public modules under source_root."""
+    for source, rel_path in iter_source_files(source_root, base):
+        try:
+            module = extract_stub(source, rel_path)
+        except SyntaxError:
+            continue
+
+        if not module.classes and not module.functions:
+            continue
+
+        stub_path = output_dir / Path(rel_path).with_suffix(".pyi")
+        stub_path.parent.mkdir(parents=True, exist_ok=True)
+        stub_path.write_text(render_stub(module))
+        print(f"Wrote {stub_path}")

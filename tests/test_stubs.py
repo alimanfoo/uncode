@@ -1,0 +1,291 @@
+import textwrap
+
+import pytest
+
+from uncoded.stubs import (
+    StubClass,
+    StubFunction,
+    StubModule,
+    StubParam,
+    extract_stub,
+    render_stub,
+)
+
+
+class TestExtractStub:
+    def test_simple_function(self):
+        source = textwrap.dedent("""\
+            def greet(name: str) -> str:
+                '''Say hello.'''
+                return f"Hello, {name}"
+        """)
+        module = extract_stub(source, "pkg/greet.py")
+        assert len(module.functions) == 1
+        f = module.functions[0]
+        assert f.name == "greet"
+        assert f.params == [StubParam("name", "str")]
+        assert f.return_annotation == "str"
+        assert f.docstring_excerpt == "Say hello."
+        assert f.start_line == 1
+        assert f.end_line == 3
+
+    def test_function_no_annotations(self):
+        source = textwrap.dedent("""\
+            def run(x, y):
+                pass
+        """)
+        module = extract_stub(source, "pkg/run.py")
+        f = module.functions[0]
+        assert f.params == [StubParam("x"), StubParam("y")]
+        assert f.return_annotation is None
+
+    def test_async_function(self):
+        source = textwrap.dedent("""\
+            async def fetch(url: str) -> bytes:
+                pass
+        """)
+        module = extract_stub(source, "pkg/net.py")
+        f = module.functions[0]
+        assert f.is_async is True
+        assert f.name == "fetch"
+
+    def test_private_function_excluded(self):
+        source = textwrap.dedent("""\
+            def public(): pass
+            def _private(): pass
+        """)
+        module = extract_stub(source, "pkg/mod.py")
+        assert len(module.functions) == 1
+        assert module.functions[0].name == "public"
+
+    def test_class_with_attributes_and_methods(self):
+        source = textwrap.dedent("""\
+            class Record:
+                '''Stores a named value.'''
+                name: str
+                value: int
+
+                def save(self) -> None:
+                    '''Persist the record.'''
+                    pass
+        """)
+        module = extract_stub(source, "pkg/models.py")
+        assert len(module.classes) == 1
+        cls = module.classes[0]
+        assert cls.name == "Record"
+        assert cls.docstring_excerpt == "Stores a named value."
+        assert cls.attributes == [StubParam("name", "str"), StubParam("value", "int")]
+        assert len(cls.methods) == 1
+        m = cls.methods[0]
+        assert m.name == "save"
+        assert m.params == [StubParam("self")]
+        assert m.return_annotation == "None"
+        assert m.docstring_excerpt == "Persist the record."
+
+    def test_class_line_range(self):
+        source = textwrap.dedent("""\
+            class Foo:
+                def bar(self):
+                    pass
+
+                def baz(self):
+                    pass
+        """)
+        module = extract_stub(source, "pkg/foo.py")
+        cls = module.classes[0]
+        assert cls.start_line == 1
+        assert cls.end_line == 6
+        assert cls.methods[0].start_line == 2
+        assert cls.methods[0].end_line == 3
+        assert cls.methods[1].start_line == 5
+        assert cls.methods[1].end_line == 6
+
+    def test_class_with_bases(self):
+        source = textwrap.dedent("""\
+            class Dog(Animal, Domestic):
+                pass
+        """)
+        module = extract_stub(source, "pkg/animals.py")
+        assert module.classes[0].bases == ["Animal", "Domestic"]
+
+    def test_class_no_bases(self):
+        source = textwrap.dedent("""\
+            class Plain:
+                pass
+        """)
+        module = extract_stub(source, "pkg/plain.py")
+        assert module.classes[0].bases == []
+
+    def test_docstring_first_sentence_only(self):
+        source = textwrap.dedent("""\
+            def process():
+                '''Parse the input. Then validate it. Then return.'''
+                pass
+        """)
+        module = extract_stub(source, "pkg/proc.py")
+        assert module.functions[0].docstring_excerpt == "Parse the input."
+
+    def test_no_docstring(self):
+        source = textwrap.dedent("""\
+            def silent():
+                pass
+        """)
+        module = extract_stub(source, "pkg/silent.py")
+        assert module.functions[0].docstring_excerpt is None
+
+    def test_kwargs_and_varargs(self):
+        source = textwrap.dedent("""\
+            def build(*args: str, **kwargs: int) -> None:
+                pass
+        """)
+        module = extract_stub(source, "pkg/build.py")
+        f = module.functions[0]
+        assert StubParam("*args", "str") in f.params
+        assert StubParam("**kwargs", "int") in f.params
+
+    def test_imports_collected(self):
+        source = textwrap.dedent("""\
+            import os
+            from pathlib import Path
+            from typing import Optional
+
+            def run(p: Path) -> Optional[str]:
+                pass
+        """)
+        module = extract_stub(source, "pkg/run.py")
+        assert module.imports == ["import os", "from pathlib import Path", "from typing import Optional"]
+
+    def test_syntax_error_raises(self):
+        with pytest.raises(SyntaxError):
+            extract_stub("def broken(:\n", "pkg/bad.py")
+
+    def test_source_order_preserved(self):
+        source = textwrap.dedent("""\
+            def zebra(): pass
+            class Alpha: pass
+            def apple(): pass
+        """)
+        module = extract_stub(source, "pkg/mixed.py")
+        assert module.functions[0].name == "zebra"
+        assert module.functions[1].name == "apple"
+        assert module.classes[0].name == "Alpha"
+
+
+class TestRenderStub:
+    def test_header_contains_path(self):
+        module = StubModule(rel_path="src/pkg/mod.py")
+        assert render_stub(module).startswith("# src/pkg/mod.py")
+
+    def test_imports_rendered(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            imports=["import os", "from pathlib import Path"],
+        )
+        output = render_stub(module)
+        assert "import os\nfrom pathlib import Path" in output
+
+    def test_function_line_range(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            functions=[
+                StubFunction(name="run", start_line=10, end_line=20)
+            ],
+        )
+        output = render_stub(module)
+        assert "def run():  # L10-20\n    ..." in output
+
+    def test_async_function_prefix(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            functions=[
+                StubFunction(name="fetch", is_async=True, start_line=1, end_line=3)
+            ],
+        )
+        assert "async def fetch" in render_stub(module)
+
+    def test_function_with_annotations(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            functions=[
+                StubFunction(
+                    name="greet",
+                    params=[StubParam("name", "str")],
+                    return_annotation="str",
+                    start_line=1,
+                    end_line=2,
+                )
+            ],
+        )
+        assert "def greet(name: str) -> str:" in render_stub(module)
+
+    def test_docstring_excerpt_rendered(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            functions=[
+                StubFunction(
+                    name="go",
+                    docstring_excerpt="Do the thing.",
+                    start_line=1,
+                    end_line=3,
+                )
+            ],
+        )
+        output = render_stub(module)
+        assert '"""Do the thing."""' in output
+        assert '"""Do the thing."""\n    ...' in output
+
+    def test_class_with_bases(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            classes=[
+                StubClass(name="Dog", bases=["Animal"], start_line=1, end_line=5)
+            ],
+        )
+        assert "class Dog(Animal):  # L1-5" in render_stub(module)
+
+    def test_class_no_bases(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            classes=[StubClass(name="Plain", start_line=1, end_line=2)],
+        )
+        assert "class Plain:  # L1-2" in render_stub(module)
+
+    def test_attribute_with_annotation(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            classes=[
+                StubClass(
+                    name="Record",
+                    start_line=1,
+                    end_line=3,
+                    attributes=[StubParam("name", "str")],
+                )
+            ],
+        )
+        assert "    name: str" in render_stub(module)
+
+    def test_method_indented(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            classes=[
+                StubClass(
+                    name="Foo",
+                    start_line=1,
+                    end_line=5,
+                    methods=[
+                        StubFunction(
+                            name="bar",
+                            params=[StubParam("self")],
+                            start_line=2,
+                            end_line=4,
+                        )
+                    ],
+                )
+            ],
+        )
+        output = render_stub(module)
+        assert "    def bar(self):  # L2-4" in output
+
+    def test_ends_with_newline(self):
+        module = StubModule(rel_path="pkg/mod.py")
+        assert render_stub(module).endswith("\n")

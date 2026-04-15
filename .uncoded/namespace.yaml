@@ -2,6 +2,7 @@ src/:
   uncoded/:
     cli.py:
       main:
+      cmd_stubs:
       cmd_map:
     extract.py:
       ClassInfo:
@@ -14,7 +15,35 @@ src/:
         functions:
       is_public:
       extract_module:
+      iter_source_files:
       walk_source:
     namespace_map.py:
       build_map:
       render_map:
+    stubs.py:
+      StubParam:
+        name:
+        annotation:
+      StubFunction:
+        name:
+        params:
+        return_annotation:
+        docstring_excerpt:
+        start_line:
+        end_line:
+        is_async:
+      StubClass:
+        name:
+        bases:
+        docstring_excerpt:
+        start_line:
+        end_line:
+        attributes:
+        methods:
+      StubModule:
+        rel_path:
+        classes:
+        functions:
+      extract_stub:
+      render_stub:
+      build_stubs:
