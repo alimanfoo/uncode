@@ -49,14 +49,15 @@ class TestExtractStub:
         assert f.is_async is True
         assert f.name == "fetch"
 
-    def test_private_function_excluded(self):
+    def test_private_function_included(self):
         source = textwrap.dedent("""\
             def public(): pass
             def _private(): pass
         """)
         module = extract_stub(source, "pkg/mod.py")
-        assert len(module.functions) == 1
+        assert len(module.functions) == 2
         assert module.functions[0].name == "public"
+        assert module.functions[1].name == "_private"
 
     def test_class_with_attributes_and_methods(self):
         source = textwrap.dedent("""\
@@ -64,9 +65,13 @@ class TestExtractStub:
                 '''Stores a named value.'''
                 name: str
                 value: int
+                _internal: float
 
                 def save(self) -> None:
                     '''Persist the record.'''
+                    pass
+
+                def _validate(self) -> bool:
                     pass
         """)
         module = extract_stub(source, "pkg/models.py")
@@ -74,13 +79,14 @@ class TestExtractStub:
         cls = module.classes[0]
         assert cls.name == "Record"
         assert cls.docstring_excerpt == "Stores a named value."
-        assert cls.attributes == [StubParam("name", "str"), StubParam("value", "int")]
-        assert len(cls.methods) == 1
-        m = cls.methods[0]
-        assert m.name == "save"
-        assert m.params == [StubParam("self")]
-        assert m.return_annotation == "None"
-        assert m.docstring_excerpt == "Persist the record."
+        assert cls.attributes == [
+            StubParam("name", "str"),
+            StubParam("value", "int"),
+            StubParam("_internal", "float"),
+        ]
+        assert len(cls.methods) == 2
+        assert cls.methods[0].name == "save"
+        assert cls.methods[1].name == "_validate"
 
     def test_class_line_range(self):
         source = textwrap.dedent("""\

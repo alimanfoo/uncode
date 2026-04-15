@@ -123,13 +123,10 @@ def _extract_class(node: ast.ClassDef) -> StubClass:
         if (
             isinstance(child, ast.AnnAssign)
             and isinstance(child.target, ast.Name)
-            and is_public(child.target.id)
         ):
             annotation = ast.unparse(child.annotation) if child.annotation else None
             attributes.append(StubParam(name=child.target.id, annotation=annotation))
-        elif isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)) and is_public(
-            child.name
-        ):
+        elif isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
             methods.append(_extract_function(child))
 
     return StubClass(
@@ -144,7 +141,7 @@ def _extract_class(node: ast.ClassDef) -> StubClass:
 
 
 def extract_stub(source: str, rel_path: str) -> StubModule:
-    """Parse Python source and extract the public API surface."""
+    """Parse Python source and extract all symbols with their signatures and line ranges."""
     tree = ast.parse(source)
     imports: list[str] = []
     classes: list[StubClass] = []
@@ -153,11 +150,9 @@ def extract_stub(source: str, rel_path: str) -> StubModule:
     for node in ast.iter_child_nodes(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             imports.append(ast.unparse(node))
-        elif isinstance(node, ast.ClassDef) and is_public(node.name):
+        elif isinstance(node, ast.ClassDef):
             classes.append(_extract_class(node))
-        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and is_public(
-            node.name
-        ):
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             functions.append(_extract_function(node))
 
     return StubModule(rel_path=rel_path, imports=imports, classes=classes, functions=functions)

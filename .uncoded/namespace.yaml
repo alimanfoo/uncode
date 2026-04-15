@@ -90,7 +90,7 @@ tests/:
       test_simple_function:
       test_function_no_annotations:
       test_async_function:
-      test_private_function_excluded:
+      test_private_function_included:
       test_class_with_attributes_and_methods:
       test_class_line_range:
       test_class_with_bases:

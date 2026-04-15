@@ -6,19 +6,41 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from uncoded.extract import is_public, iter_source_files
 
-def extract_stub(source: str, rel_path: str) -> StubModule:  # L146-163
-    """Parse Python source and extract the public API surface."""
+def _first_sentence(node: ast.AsyncFunctionDef | ast.FunctionDef | ast.ClassDef | ast.Module) -> str | None:  # L55-66
+    """Return the first sentence of a node's docstring, or None."""
     ...
 
-def render_stub(module: StubModule) -> str:  # L187-220
+def _extract_params(args: ast.arguments) -> list[StubParam]:  # L69-97
+    """Extract parameters from a function argument node, without defaults."""
+    ...
+
+def _extract_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> StubFunction:  # L100-112
+    """Build a StubFunction from a function or method AST node."""
+    ...
+
+def _extract_class(node: ast.ClassDef) -> StubClass:  # L115-140
+    """Build a StubClass from a class AST node."""
+    ...
+
+def extract_stub(source: str, rel_path: str) -> StubModule:  # L143-158
+    """Parse Python source and extract all symbols with their signatures and line ranges."""
+    ...
+
+def _render_param(p: StubParam) -> str:  # L161-166
+    ...
+
+def _render_function(func: StubFunction, indent: str) -> list[str]:  # L169-179
+    ...
+
+def render_stub(module: StubModule) -> str:  # L182-215
     """Render a StubModule as a .pyi file string."""
     ...
 
-def generate_stubs(source_root: Path, base: Path | None) -> dict[Path, str]:  # L223-236
+def generate_stubs(source_root: Path, base: Path | None) -> dict[Path, str]:  # L218-231
     """Return {rel_stub_path: content} for all public modules, without writing."""
     ...
 
-def build_stubs(source_root: Path, output_dir: Path) -> None:  # L242-248
+def build_stubs(source_root: Path, output_dir: Path) -> None:  # L237-243
     """Write stub files for all public modules under source_root."""
     ...
 
