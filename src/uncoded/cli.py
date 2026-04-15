@@ -4,6 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from uncoded.claude_md import check_claude_md, sync_claude_md
 from uncoded.extract import walk_source
 from uncoded.namespace_map import build_map, render_map
 from uncoded.stubs import DEFAULT_STUBS_OUTPUT, build_stubs, generate_stubs
@@ -62,6 +63,7 @@ def cmd_sync(args: argparse.Namespace) -> int:
 
     for root in source_roots:
         build_stubs(root)
+    sync_claude_md()
     return 0
 
 
@@ -90,6 +92,10 @@ def cmd_check(args: argparse.Namespace) -> int:
             elif stub_path.read_text() != expected_content:
                 print(f"Out of date: {stub_path}")
                 ok = False
+
+    if not check_claude_md():
+        print("Out of date: CLAUDE.md")
+        ok = False
 
     if not ok:
         print("Run `uncoded sync <src> [...]` to update.", file=sys.stderr)

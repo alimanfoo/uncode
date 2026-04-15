@@ -1,5 +1,9 @@
 src/:
   uncoded/:
+    claude_md.py:
+      generate_section:
+      sync_claude_md:
+      check_claude_md:
     cli.py:
       main:
       cmd_sync:
@@ -50,6 +54,22 @@ src/:
       generate_stubs:
       build_stubs:
 tests/:
+  test_claude_md.py:
+    TestGenerateSection:
+      test_contains_markers:
+      test_markers_in_order:
+      test_ends_with_newline:
+    TestSyncClaudeMd:
+      test_creates_file_if_missing:
+      test_appends_to_existing_file:
+      test_replaces_existing_section:
+      test_preserves_content_after_section:
+      test_idempotent:
+    TestCheckClaudeMd:
+      test_returns_false_if_missing:
+      test_returns_false_if_section_absent:
+      test_returns_true_after_sync:
+      test_returns_false_if_section_outdated:
   test_extract.py:
     TestIsPublic:
       test_public_name:

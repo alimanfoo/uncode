@@ -28,44 +28,6 @@ Two-level index:
    Includes all symbols — public and private — so agents can follow calls
    into implementation detail without grepping.
 
-## Navigation protocol
-
-If you are working on a repo that contains a `.uncoded/` directory, follow
-this protocol. Do not grep. Do not read whole source files.
-
-**Step 1 — Orient.** At the start of every task, read the namespace map in
-full:
-
-```
-Read .uncoded/namespace.yaml
-```
-
-This gives you every public symbol in the codebase — directories, files,
-classes, methods, functions — in source order. Use it to identify which
-files are relevant to your task.
-
-**Step 2 — Understand.** For each relevant file, read its stub in full. The
-stub path mirrors the source path under `.uncoded/stubs/`, with a `.pyi`
-extension:
-
-```
-src/foo/bar.py  →  .uncoded/stubs/src/foo/bar.pyi
-tests/test_foo.py  →  .uncoded/stubs/tests/test_foo.pyi
-```
-
-The stub gives you imports, all signatures with types, first-sentence
-docstrings, and a `L<start>-<end>` line range on every definition.
-
-**Step 3 — Read.** Use line ranges from the stub to read only the
-implementation you need:
-
-```
-Read src/foo/bar.py  offset=<start>  limit=<end - start + 1>
-```
-
-Stubs include private symbols (`_name`) alongside public ones, so you can
-follow calls into helpers without guessing where they are.
-
 ## Design notes
 
 - Paths in the namespace map are repo-relative, so an agent can open any
@@ -80,11 +42,13 @@ follow calls into helpers without guessing where they are.
 - Source order is preserved, not alphabetized.
 - `uncoded sync` runs as a pre-commit hook to keep the index in sync.
   `uncoded check` runs in CI to catch drift.
+- `uncoded sync` also maintains a navigation section in CLAUDE.md so
+  agents working on any repo using uncoded get the protocol automatically.
 
 ## Commands
 
 ```
-# Generate (or update) the namespace map and stub files
+# Generate (or update) the namespace map, stub files, and CLAUDE.md section
 uncoded sync src tests
 
 # Check that the index is up to date (used in CI)
@@ -93,3 +57,37 @@ uncoded check src tests
 # Run tests
 pytest
 ```
+
+<!-- uncoded:start -->
+## uncoded navigation index
+
+This repo uses [uncoded](https://github.com/alimanfoo/uncoded) to maintain
+a navigation index for AI agents. Do not grep. Do not read whole source files.
+
+**Step 1 — Orient.** At the start of every task, read the namespace map in full:
+
+```
+Read .uncoded/namespace.yaml
+```
+
+This lists every public symbol in the codebase — directories, files, classes,
+methods, functions — in source order.
+
+**Step 2 — Understand.** For each relevant file, read its stub. The stub path
+mirrors the source path under `.uncoded/stubs/` with a `.pyi` extension:
+
+```
+src/foo/bar.py      →  .uncoded/stubs/src/foo/bar.pyi
+tests/test_foo.py   →  .uncoded/stubs/tests/test_foo.pyi
+```
+
+The stub gives you imports, all signatures with types, first-sentence
+docstrings, and a `L<start>-<end>` line range on every definition —
+including private helpers.
+
+**Step 3 — Read.** Use line ranges from the stub to read only what you need:
+
+```
+Read src/foo/bar.py  offset=<start>  limit=<end - start + 1>
+```
+<!-- uncoded:end -->
