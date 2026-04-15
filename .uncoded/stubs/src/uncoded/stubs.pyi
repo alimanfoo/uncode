@@ -6,19 +6,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from uncoded.extract import is_public, iter_source_files
 
-def extract_stub(source: str, rel_path: str) -> StubModule:  # L144-161
+def extract_stub(source: str, rel_path: str) -> StubModule:  # L146-163
     """Parse Python source and extract the public API surface."""
     ...
 
-def render_stub(module: StubModule) -> str:  # L185-218
+def render_stub(module: StubModule) -> str:  # L187-220
     """Render a StubModule as a .pyi file string."""
     ...
 
-def generate_stubs(source_root: Path, base: Path | None) -> dict[Path, str]:  # L221-234
+def generate_stubs(source_root: Path, base: Path | None) -> dict[Path, str]:  # L223-236
     """Return {rel_stub_path: content} for all public modules, without writing."""
     ...
 
-def build_stubs(source_root: Path, output_dir: Path) -> None:  # L240-246
+def build_stubs(source_root: Path, output_dir: Path) -> None:  # L242-248
     """Write stub files for all public modules under source_root."""
     ...
 

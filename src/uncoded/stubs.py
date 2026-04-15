@@ -52,7 +52,9 @@ class StubModule:
     functions: list[StubFunction] = field(default_factory=list)
 
 
-def _first_sentence(node: ast.AST) -> str | None:
+def _first_sentence(
+    node: ast.AsyncFunctionDef | ast.FunctionDef | ast.ClassDef | ast.Module,
+) -> str | None:
     """Return the first sentence of a node's docstring, or None."""
     docstring = ast.get_docstring(node)
     if not docstring:
@@ -105,7 +107,7 @@ def _extract_function(
         return_annotation=ast.unparse(node.returns) if node.returns else None,
         docstring_excerpt=_first_sentence(node),
         start_line=node.lineno,
-        end_line=node.end_lineno,
+        end_line=node.end_lineno or node.lineno,
         is_async=isinstance(node, ast.AsyncFunctionDef),
     )
 
@@ -135,7 +137,7 @@ def _extract_class(node: ast.ClassDef) -> StubClass:
         bases=bases,
         docstring_excerpt=_first_sentence(node),
         start_line=node.lineno,
-        end_line=node.end_lineno,
+        end_line=node.end_lineno or node.lineno,
         attributes=attributes,
         methods=methods,
     )
