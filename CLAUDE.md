@@ -40,19 +40,19 @@ Two-level index:
 - `__init__.py` is included when it contains public symbols, so
   package-level API is not invisible.
 - Source order is preserved, not alphabetized.
-- `uncoded sync` runs as a pre-commit hook to keep the index in sync.
-  `uncoded check` runs in CI to catch drift.
-- `uncoded sync` also maintains a navigation section in CLAUDE.md so
-  agents working on any repo using uncoded get the protocol automatically.
+- `uncoded` runs as a pre-commit hook to keep the index in sync, and in
+  CI via `pre-commit run --all-files`. Like `ruff format`: run it, and if
+  it modifies files the commit or CI step fails.
+- `uncoded` also maintains a navigation section in CLAUDE.md so agents
+  working on any repo using uncoded get the protocol automatically.
+- Source roots are configured once in `pyproject.toml` under
+  `[tool.uncoded] source-roots`; no arguments needed at invocation.
 
 ## Commands
 
 ```
 # Generate (or update) the namespace map, stub files, and CLAUDE.md section
-uncoded sync src tests
-
-# Check that the index is up to date (used in CI)
-uncoded check src tests
+uncoded
 
 # Run tests
 pytest

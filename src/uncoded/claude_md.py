@@ -74,8 +74,3 @@ def sync_claude_md(path: Path = DEFAULT_CLAUDE_MD) -> None:
         print(f"Updated {path}")
 
 
-def check_claude_md(path: Path = DEFAULT_CLAUDE_MD) -> bool:
-    """Return True if CLAUDE.md contains the current uncoded navigation section."""
-    if not path.exists():
-        return False
-    return generate_section() in path.read_text()

@@ -36,12 +36,11 @@ def render_stub(module: StubModule) -> str:  # L182-215
     """Render a StubModule as a .pyi file string."""
     ...
 
-def generate_stubs(source_root: Path, base: Path | None) -> dict[Path, str]:  # L218-231
-    """Return {rel_stub_path: content} for all public modules, without writing."""
+def _generate_stubs(source_root: Path) -> dict[Path, str]:  # L218-228
     ...
 
-def build_stubs(source_root: Path, output_dir: Path) -> None:  # L237-243
-    """Write stub files for all public modules under source_root."""
+def build_stubs(source_root: Path, output_dir: Path) -> None:  # L234-240
+    """Write stub files for all symbols under source_root."""
     ...
 
 class StubParam:  # L12-16

@@ -1,9 +1,6 @@
-from pathlib import Path
-
 from uncoded.claude_md import (
     MARKER_END,
     MARKER_START,
-    check_claude_md,
     generate_section,
     sync_claude_md,
 )
@@ -62,23 +59,3 @@ class TestSyncClaudeMd:
         first = path.read_text()
         sync_claude_md(path)
         assert path.read_text() == first
-
-
-class TestCheckClaudeMd:
-    def test_returns_false_if_missing(self, tmp_path):
-        assert check_claude_md(tmp_path / "CLAUDE.md") is False
-
-    def test_returns_false_if_section_absent(self, tmp_path):
-        path = tmp_path / "CLAUDE.md"
-        path.write_text("# My Project\n")
-        assert check_claude_md(path) is False
-
-    def test_returns_true_after_sync(self, tmp_path):
-        path = tmp_path / "CLAUDE.md"
-        sync_claude_md(path)
-        assert check_claude_md(path) is True
-
-    def test_returns_false_if_section_outdated(self, tmp_path):
-        path = tmp_path / "CLAUDE.md"
-        path.write_text(f"{MARKER_START}\nstale content\n{MARKER_END}\n")
-        assert check_claude_md(path) is False

@@ -14,8 +14,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv python install 3.12
       - run: uv sync --extra dev
-      - run: SKIP=uncoded-sync uv run pre-commit run --all-files
-      - run: uv run uncoded check src tests
+      - run: uv run pre-commit run --all-files
 
   test:
     runs-on: ubuntu-latest

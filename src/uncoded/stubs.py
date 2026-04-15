@@ -215,12 +215,9 @@ def render_stub(module: StubModule) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def generate_stubs(
-    source_root: Path, base: Path | None = None
-) -> dict[Path, str]:
-    """Return {rel_stub_path: content} for all public modules, without writing."""
+def _generate_stubs(source_root: Path) -> dict[Path, str]:
     result: dict[Path, str] = {}
-    for source, rel_path in iter_source_files(source_root, base):
+    for source, rel_path in iter_source_files(source_root):
         try:
             module = extract_stub(source, rel_path)
         except SyntaxError:
@@ -235,8 +232,8 @@ DEFAULT_STUBS_OUTPUT = Path(".uncoded/stubs")
 
 
 def build_stubs(source_root: Path, output_dir: Path = DEFAULT_STUBS_OUTPUT) -> None:
-    """Write stub files for all public modules under source_root."""
-    for rel_stub_path, content in generate_stubs(source_root).items():
+    """Write stub files for all symbols under source_root."""
+    for rel_stub_path, content in _generate_stubs(source_root).items():
         stub_path = output_dir / rel_stub_path
         stub_path.parent.mkdir(parents=True, exist_ok=True)
         stub_path.write_text(content)

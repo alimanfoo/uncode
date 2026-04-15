@@ -3,11 +3,11 @@ src/:
     claude_md.py:
       generate_section:
       sync_claude_md:
-      check_claude_md:
     cli.py:
       main:
-      cmd_sync:
-      cmd_check:
+    config.py:
+      find_pyproject_toml:
+      read_source_roots:
     extract.py:
       ClassInfo:
         name:
@@ -51,7 +51,6 @@ src/:
         functions:
       extract_stub:
       render_stub:
-      generate_stubs:
       build_stubs:
 tests/:
   test_claude_md.py:
@@ -65,11 +64,15 @@ tests/:
       test_replaces_existing_section:
       test_preserves_content_after_section:
       test_idempotent:
-    TestCheckClaudeMd:
-      test_returns_false_if_missing:
-      test_returns_false_if_section_absent:
-      test_returns_true_after_sync:
-      test_returns_false_if_section_outdated:
+  test_config.py:
+    TestFindPyprojectToml:
+      test_finds_in_cwd:
+      test_finds_in_parent:
+      test_returns_none_if_not_found:
+    TestReadSourceRoots:
+      test_reads_source_roots:
+      test_raises_if_no_pyproject_toml:
+      test_raises_if_no_uncoded_section:
   test_extract.py:
     TestIsPublic:
       test_public_name:
