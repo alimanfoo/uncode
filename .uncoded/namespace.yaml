@@ -2,8 +2,9 @@ src/:
   uncoded/:
     cli.py:
       main:
-      cmd_stubs:
       cmd_map:
+      cmd_stubs:
+      cmd_sync:
     extract.py:
       ClassInfo:
         name:
@@ -42,6 +43,7 @@ src/:
         methods:
       StubModule:
         rel_path:
+        imports:
         classes:
         functions:
       extract_stub:
