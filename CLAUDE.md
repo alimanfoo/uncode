@@ -73,9 +73,13 @@ Read .uncoded/namespace.yaml
 This lists every public symbol in the codebase — directories, files, classes,
 methods, functions — in source order.
 
-**Step 2 — Understand.** For each relevant file, read its stub. The stub for
-`src/foo/bar.py` is at `.uncoded/stubs/src/foo/bar.pyi` — same path, `.pyi`
-extension, under `.uncoded/stubs/`.
+**Step 2 — Understand.** For each relevant file, read its stub. The stub path
+mirrors the source path under `.uncoded/stubs/` with a `.pyi` extension:
+
+```
+src/foo/bar.py      →  .uncoded/stubs/src/foo/bar.pyi
+tests/test_foo.py   →  .uncoded/stubs/tests/test_foo.pyi
+```
 
 The stub gives you imports, all signatures with types, first-sentence
 docstrings, and a `L<start>-<end>` line range on every definition —
