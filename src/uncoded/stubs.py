@@ -218,25 +218,29 @@ def render_stub(module: StubModule) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-DEFAULT_STUBS_OUTPUT = Path(".uncoded/stubs")
-
-
-def build_stubs(
-    source_root: Path,
-    base: Path | None = None,
-    output_dir: Path = DEFAULT_STUBS_OUTPUT,
-) -> None:
-    """Generate stub files for all public modules under source_root."""
+def generate_stubs(
+    source_root: Path, base: Path | None = None
+) -> dict[Path, str]:
+    """Return {rel_stub_path: content} for all public modules, without writing."""
+    result: dict[Path, str] = {}
     for source, rel_path in iter_source_files(source_root, base):
         try:
             module = extract_stub(source, rel_path)
         except SyntaxError:
             continue
-
         if not module.classes and not module.functions:
             continue
+        result[Path(rel_path).with_suffix(".pyi")] = render_stub(module)
+    return result
 
-        stub_path = output_dir / Path(rel_path).with_suffix(".pyi")
+
+DEFAULT_STUBS_OUTPUT = Path(".uncoded/stubs")
+
+
+def build_stubs(source_root: Path, output_dir: Path = DEFAULT_STUBS_OUTPUT) -> None:
+    """Write stub files for all public modules under source_root."""
+    for rel_stub_path, content in generate_stubs(source_root).items():
+        stub_path = output_dir / rel_stub_path
         stub_path.parent.mkdir(parents=True, exist_ok=True)
-        stub_path.write_text(render_stub(module))
+        stub_path.write_text(content)
         print(f"Wrote {stub_path}")

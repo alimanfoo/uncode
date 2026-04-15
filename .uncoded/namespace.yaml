@@ -2,9 +2,8 @@ src/:
   uncoded/:
     cli.py:
       main:
-      cmd_map:
-      cmd_stubs:
       cmd_sync:
+      cmd_check:
     extract.py:
       ClassInfo:
         name:
@@ -48,4 +47,5 @@ src/:
         functions:
       extract_stub:
       render_stub:
+      generate_stubs:
       build_stubs:

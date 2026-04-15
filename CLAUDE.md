@@ -43,8 +43,11 @@ Two-level index (phase 2 in progress):
 ## Commands
 
 ```
-# Generate the namespace map
-uncoded map src
+# Generate (or update) the namespace map and stub files
+uncoded sync src
+
+# Check that the index is up to date (used in CI)
+uncoded check src
 
 # Run tests
 pytest
