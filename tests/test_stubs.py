@@ -270,7 +270,6 @@ class TestExtractStub:
             ("count", "int", "0"),
         ]
 
-
     def test_property_rendered_as_attribute(self):
         source = textwrap.dedent("""\
             class Config:
