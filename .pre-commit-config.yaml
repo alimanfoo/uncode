@@ -14,3 +14,16 @@ repos:
       - id: ruff
         args: [--fix]
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty
+        entry: uvx ty check src tests
+        language: system
+        pass_filenames: false
+      - id: uncoded
+        name: uncoded
+        entry: uncoded
+        language: system
+        pass_filenames: false

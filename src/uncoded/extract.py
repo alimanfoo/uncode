@@ -1,6 +1,7 @@
 """Extract public symbols from Python source files using the AST."""
 
 import ast
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -61,28 +62,25 @@ def extract_module(source: str, rel_path: str) -> ModuleInfo:
     return ModuleInfo(rel_path=rel_path, classes=classes, functions=functions)
 
 
-def walk_source(source_root: Path, base: Path | None = None) -> list[ModuleInfo]:
-    """Walk a source root and extract public symbols from all packages.
+def iter_source_files(
+    source_root: Path, base: Path | None = None
+) -> Iterator[tuple[str, str]]:
+    """Yield (source_text, rel_path) for each candidate Python file.
 
-    Paths in the returned ModuleInfo are relative to *base* (defaults to
-    cwd), so they can be used directly to open files from the repo root.
-
-    Skips __init__.py, private modules (leading underscore), and files
-    that contain no public symbols. Skips files with syntax errors.
+    Includes __init__.py when it contains public symbols. Skips other
+    private modules (leading underscore) and private directories. Paths
+    are relative to *base* (defaults to cwd).
     """
     if base is None:
         base = Path.cwd()
 
     source_root = source_root.resolve()
     base = base.resolve()
-    modules: list[ModuleInfo] = []
 
     for py_file in sorted(source_root.rglob("*.py")):
-        # Skip private modules and __init__.py
-        if py_file.name.startswith("_"):
+        if py_file.name.startswith("_") and py_file.name != "__init__.py":
             continue
 
-        # Skip if any parent directory (within source root) is private
         try:
             rel_to_root = py_file.relative_to(source_root)
         except ValueError:
@@ -90,11 +88,23 @@ def walk_source(source_root: Path, base: Path | None = None) -> list[ModuleInfo]
         if any(part.startswith("_") for part in rel_to_root.parts[:-1]):
             continue
 
-        # Path relative to base (repo root), for use in the map
         rel_path = str(py_file.relative_to(base))
+        yield py_file.read_text(), rel_path
 
-        source = py_file.read_text()
 
+def walk_source(source_root: Path, base: Path | None = None) -> list[ModuleInfo]:
+    """Walk a source root and extract public symbols from all packages.
+
+    Paths in the returned ModuleInfo are relative to *base* (defaults to
+    cwd), so they can be used directly to open files from the repo root.
+
+    Includes __init__.py when it contains public symbols. Skips other
+    private modules (leading underscore), files with no public symbols,
+    and files with syntax errors.
+    """
+    modules: list[ModuleInfo] = []
+
+    for source, rel_path in iter_source_files(source_root, base):
         try:
             module = extract_module(source, rel_path)
         except SyntaxError:

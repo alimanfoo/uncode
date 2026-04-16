@@ -21,6 +21,12 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=3.0",
+    "pytest>=8.0",
+]
+
 [project.scripts]
 uncoded = "uncoded.cli:main"
 
@@ -28,12 +34,16 @@ uncoded = "uncoded.cli:main"
 Homepage = "https://github.com/alimanfoo/uncoded"
 Repository = "https://github.com/alimanfoo/uncoded"
 
+[tool.uncoded]
+source-roots = ["src", "tests"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.ruff]
 src = ["src"]
 line-length = 88
+extend-exclude = [".uncoded"]
 
 [tool.ruff.lint]
 select = [
