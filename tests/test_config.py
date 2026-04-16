@@ -3,7 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from uncoded.config import find_pyproject_toml, read_source_roots
+from uncoded.config import (
+    find_pyproject_toml,
+    read_instruction_files,
+    read_source_roots,
+)
+from uncoded.instruction_files import DEFAULT_INSTRUCTION_FILES
 
 
 class TestFindPyprojectToml:
@@ -43,3 +48,36 @@ class TestReadSourceRoots:
         os.chdir(tmp_path)
         with pytest.raises(KeyError):
             read_source_roots()
+
+
+class TestReadInstructionFiles:
+    def test_returns_default_when_no_pyproject_toml(self, tmp_path):
+        os.chdir(tmp_path)
+        assert read_instruction_files() == list(DEFAULT_INSTRUCTION_FILES)
+
+    def test_returns_default_when_key_absent(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            '[tool.uncoded]\nsource-roots = ["src"]\n'
+        )
+        os.chdir(tmp_path)
+        assert read_instruction_files() == list(DEFAULT_INSTRUCTION_FILES)
+
+    def test_reads_configured_list(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            "[tool.uncoded]\n"
+            'source-roots = ["src"]\n'
+            'instruction-files = ["CLAUDE.md", "AGENTS.md", "CONVENTIONS.md"]\n'
+        )
+        os.chdir(tmp_path)
+        assert read_instruction_files() == [
+            Path("CLAUDE.md"),
+            Path("AGENTS.md"),
+            Path("CONVENTIONS.md"),
+        ]
+
+    def test_empty_list_is_respected(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            '[tool.uncoded]\nsource-roots = ["src"]\ninstruction-files = []\n'
+        )
+        os.chdir(tmp_path)
+        assert read_instruction_files() == []

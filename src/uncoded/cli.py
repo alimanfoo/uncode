@@ -3,9 +3,9 @@
 import sys
 from pathlib import Path
 
-from uncoded.claude_md import sync_claude_md
-from uncoded.config import read_source_roots
+from uncoded.config import read_instruction_files, read_source_roots
 from uncoded.extract import walk_source
+from uncoded.instruction_files import sync_instruction_file
 from uncoded.namespace_map import build_map, render_map
 from uncoded.stubs import build_stubs
 
@@ -13,7 +13,7 @@ DEFAULT_MAP_OUTPUT = Path(".uncoded/namespace.yaml")
 
 
 def main() -> int:
-    """Build the namespace map, stub files, and CLAUDE.md navigation section."""
+    """Build the namespace map, stub files, and instruction-file navigation sections."""
     try:
         source_roots = [r.resolve() for r in read_source_roots()]
     except (FileNotFoundError, KeyError) as e:
@@ -34,5 +34,6 @@ def main() -> int:
     for root in source_roots:
         build_stubs(root)
 
-    sync_claude_md()
+    for path in read_instruction_files():
+        sync_instruction_file(path)
     return 0

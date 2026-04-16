@@ -1,11 +1,18 @@
-"""Maintain the uncoded navigation section in CLAUDE.md."""
+"""Maintain the uncoded navigation section in agent instruction files.
+
+Different coding agents read different instruction files from a repo's root.
+Claude Code reads ``CLAUDE.md``; an emerging cross-agent convention uses
+``AGENTS.md``. Until the ecosystem converges, a project that wants to support
+both populations needs both files, with the same navigation guidance in each.
+This module owns a delimited section in any such file and keeps it in sync.
+"""
 
 from pathlib import Path
 
 MARKER_START = "<!-- uncoded:start -->"
 MARKER_END = "<!-- uncoded:end -->"
 
-DEFAULT_CLAUDE_MD = Path("CLAUDE.md")
+DEFAULT_INSTRUCTION_FILES = [Path("CLAUDE.md"), Path("AGENTS.md")]
 
 _SECTION_BODY = """\
 ## How to navigate this codebase and read source files
@@ -61,7 +68,7 @@ SECTION = f"{MARKER_START}\n{_SECTION_BODY}\n{MARKER_END}\n"
 
 
 def generate_section() -> str:
-    """Return the full delimited uncoded section for insertion into CLAUDE.md."""
+    """Return the full delimited uncoded section for an instruction file."""
     return SECTION
 
 
@@ -78,8 +85,8 @@ def _replace_or_append(existing: str, section: str) -> str:
     return prefix + section
 
 
-def sync_claude_md(path: Path = DEFAULT_CLAUDE_MD) -> None:
-    """Write or update the uncoded navigation section in CLAUDE.md."""
+def sync_instruction_file(path: Path) -> None:
+    """Write or update the uncoded navigation section in an instruction file."""
     section = generate_section()
     if not path.exists():
         path.write_text(section)
