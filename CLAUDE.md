@@ -64,14 +64,19 @@ pytest
 This repo uses [uncoded](https://github.com/alimanfoo/uncoded) to maintain
 a navigation index for AI agents. Do not grep. Do not read whole source files.
 
-**Step 1 — Orient.** At the start of every task, read the namespace map in full:
+**Step 1 — Orient. Do this now, before anything else.** Your first action
+in this session — before answering the user, before any other tool call —
+is to read the namespace map in full:
 
 ```
 Read .uncoded/namespace.yaml
 ```
 
-This lists every public symbol in the codebase — directories, files, classes,
-methods, functions — in source order.
+Do this once, immediately, at session start — not "eventually" or "when
+a code question comes up." Without the map loaded, design and navigation
+answers will come from pretrained guesses rather than the code actually
+here. The map lists every public symbol in the codebase — directories,
+files, classes, methods, functions — in source order.
 
 **Step 2 — Understand.** For each relevant file, read its stub. The stub path
 mirrors the source path under `.uncoded/stubs/` with a `.pyi` extension:
