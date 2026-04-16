@@ -1,8 +1,8 @@
-from uncoded.claude_md import (
+from uncoded.instruction_files import (
     MARKER_END,
     MARKER_START,
     generate_section,
-    sync_claude_md,
+    sync_instruction_file,
 )
 
 
@@ -20,17 +20,17 @@ class TestGenerateSection:
         assert generate_section().endswith("\n")
 
 
-class TestSyncClaudeMd:
+class TestSyncInstructionFile:
     def test_creates_file_if_missing(self, tmp_path):
         path = tmp_path / "CLAUDE.md"
-        sync_claude_md(path)
+        sync_instruction_file(path)
         assert path.exists()
         assert generate_section() in path.read_text()
 
     def test_appends_to_existing_file(self, tmp_path):
         path = tmp_path / "CLAUDE.md"
         path.write_text("# My Project\n\nSome content.\n")
-        sync_claude_md(path)
+        sync_instruction_file(path)
         content = path.read_text()
         assert "# My Project" in content
         assert generate_section() in content
@@ -39,7 +39,7 @@ class TestSyncClaudeMd:
         path = tmp_path / "CLAUDE.md"
         old_section = f"{MARKER_START}\nold content\n{MARKER_END}\n"
         path.write_text(f"# My Project\n\n{old_section}")
-        sync_claude_md(path)
+        sync_instruction_file(path)
         content = path.read_text()
         assert "old content" not in content
         assert generate_section() in content
@@ -49,13 +49,13 @@ class TestSyncClaudeMd:
         path = tmp_path / "CLAUDE.md"
         old_section = f"{MARKER_START}\nold\n{MARKER_END}\n"
         path.write_text(f"{old_section}\n## Other section\n")
-        sync_claude_md(path)
+        sync_instruction_file(path)
         content = path.read_text()
         assert "## Other section" in content
 
     def test_idempotent(self, tmp_path):
         path = tmp_path / "CLAUDE.md"
-        sync_claude_md(path)
+        sync_instruction_file(path)
         first = path.read_text()
-        sync_claude_md(path)
+        sync_instruction_file(path)
         assert path.read_text() == first

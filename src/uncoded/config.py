@@ -3,6 +3,8 @@
 import tomllib
 from pathlib import Path
 
+from uncoded.instruction_files import DEFAULT_INSTRUCTION_FILES
+
 
 def find_pyproject_toml() -> Path | None:
     """Search for pyproject.toml starting from cwd, walking up."""
@@ -36,3 +38,25 @@ def read_source_roots() -> list[Path]:
         ) from None
 
     return [Path(r) for r in roots]
+
+
+def read_instruction_files() -> list[Path]:
+    """Read instruction files from [tool.uncoded] instruction-files in pyproject.toml.
+
+    Falls back to ``DEFAULT_INSTRUCTION_FILES`` if the key is absent or no
+    ``pyproject.toml`` is found, so that ``uncoded`` works on a fresh repo
+    without explicit configuration.
+    """
+    toml_path = find_pyproject_toml()
+    if toml_path is None:
+        return list(DEFAULT_INSTRUCTION_FILES)
+
+    with toml_path.open("rb") as f:
+        data = tomllib.load(f)
+
+    try:
+        files = data["tool"]["uncoded"]["instruction-files"]
+    except KeyError:
+        return list(DEFAULT_INSTRUCTION_FILES)
+
+    return [Path(f) for f in files]

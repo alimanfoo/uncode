@@ -1,13 +1,4 @@
-"""Maintain the uncoded navigation section in CLAUDE.md."""
-
-from pathlib import Path
-
-MARKER_START = "<!-- uncoded:start -->"
-MARKER_END = "<!-- uncoded:end -->"
-
-DEFAULT_CLAUDE_MD = Path("CLAUDE.md")
-
-_SECTION_BODY = """\
+<!-- uncoded:start -->
 ## How to navigate this codebase and read source files
 
 This repo uses [uncoded](https://github.com/alimanfoo/uncoded) to maintain
@@ -55,38 +46,5 @@ Calling Read on a `.py` file without `offset` and `limit` is a protocol
 violation — it means either Step 2 was skipped, or you are reading more
 of the file than the stub said you needed. The one exception is the
 first Read of a stub-less file (see Step 2), which is genuinely
-exploratory."""
-
-SECTION = f"{MARKER_START}\n{_SECTION_BODY}\n{MARKER_END}\n"
-
-
-def generate_section() -> str:
-    """Return the full delimited uncoded section for insertion into CLAUDE.md."""
-    return SECTION
-
-
-def _replace_or_append(existing: str, section: str) -> str:
-    """Replace the delimited section in existing text, or append it if absent."""
-    start = existing.find(MARKER_START)
-    end = existing.find(MARKER_END)
-    if start != -1 and end != -1 and start < end:
-        before = existing[:start]
-        after = existing[end + len(MARKER_END) :].lstrip("\n")
-        return before + section + after
-    stripped = existing.rstrip("\n")
-    prefix = stripped + "\n\n" if stripped else ""
-    return prefix + section
-
-
-def sync_claude_md(path: Path = DEFAULT_CLAUDE_MD) -> None:
-    """Write or update the uncoded navigation section in CLAUDE.md."""
-    section = generate_section()
-    if not path.exists():
-        path.write_text(section)
-        print(f"Wrote {path}")
-        return
-    existing = path.read_text()
-    updated = _replace_or_append(existing, section)
-    if updated != existing:
-        path.write_text(updated)
-        print(f"Updated {path}")
+exploratory.
+<!-- uncoded:end -->

@@ -1,6 +1,6 @@
-# tests/test_claude_md.py
+# tests/test_instruction_files.py
 
-from uncoded.claude_md import MARKER_END, MARKER_START, generate_section, sync_claude_md
+from uncoded.instruction_files import MARKER_END, MARKER_START, generate_section, sync_instruction_file
 
 class TestGenerateSection:  # L9-20
 
@@ -13,7 +13,7 @@ class TestGenerateSection:  # L9-20
     def test_ends_with_newline(self):  # L19-20
         ...
 
-class TestSyncClaudeMd:  # L23-61
+class TestSyncInstructionFile:  # L23-61
 
     def test_creates_file_if_missing(self, tmp_path):  # L24-28
         ...

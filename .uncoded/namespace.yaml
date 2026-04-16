@@ -1,18 +1,12 @@
 src/:
   uncoded/:
-    claude_md.py:
-      MARKER_START:
-      MARKER_END:
-      DEFAULT_CLAUDE_MD:
-      SECTION:
-      generate_section:
-      sync_claude_md:
     cli.py:
       DEFAULT_MAP_OUTPUT:
       main:
     config.py:
       find_pyproject_toml:
       read_source_roots:
+      read_instruction_files:
     extract.py:
       ClassInfo:
         name:
@@ -27,6 +21,13 @@ src/:
       extract_module:
       iter_source_files:
       walk_source:
+    instruction_files.py:
+      MARKER_START:
+      MARKER_END:
+      DEFAULT_INSTRUCTION_FILES:
+      SECTION:
+      generate_section:
+      sync_instruction_file:
     namespace_map.py:
       build_map:
       render_map:
@@ -69,17 +70,6 @@ src/:
       render_stub:
       build_stubs:
 tests/:
-  test_claude_md.py:
-    TestGenerateSection:
-      test_contains_markers:
-      test_markers_in_order:
-      test_ends_with_newline:
-    TestSyncClaudeMd:
-      test_creates_file_if_missing:
-      test_appends_to_existing_file:
-      test_replaces_existing_section:
-      test_preserves_content_after_section:
-      test_idempotent:
   test_config.py:
     TestFindPyprojectToml:
       test_finds_in_cwd:
@@ -89,6 +79,11 @@ tests/:
       test_reads_source_roots:
       test_raises_if_no_pyproject_toml:
       test_raises_if_no_uncoded_section:
+    TestReadInstructionFiles:
+      test_returns_default_when_no_pyproject_toml:
+      test_returns_default_when_key_absent:
+      test_reads_configured_list:
+      test_empty_list_is_respected:
   test_extract.py:
     TestIsPublic:
       test_public_name:
@@ -121,6 +116,17 @@ tests/:
       test_includes_init_with_public_symbols:
       test_skips_empty_init:
       test_skips_syntax_errors:
+  test_instruction_files.py:
+    TestGenerateSection:
+      test_contains_markers:
+      test_markers_in_order:
+      test_ends_with_newline:
+    TestSyncInstructionFile:
+      test_creates_file_if_missing:
+      test_appends_to_existing_file:
+      test_replaces_existing_section:
+      test_preserves_content_after_section:
+      test_idempotent:
   test_namespace_map.py:
     TestBuildMap:
       test_single_file:
