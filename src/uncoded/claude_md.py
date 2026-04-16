@@ -54,7 +54,7 @@ def _replace_or_append(existing: str, section: str) -> str:
     end = existing.find(MARKER_END)
     if start != -1 and end != -1 and start < end:
         before = existing[:start]
-        after = existing[end + len(MARKER_END):].lstrip("\n")
+        after = existing[end + len(MARKER_END) :].lstrip("\n")
         return before + section + after
     stripped = existing.rstrip("\n")
     prefix = stripped + "\n\n" if stripped else ""
@@ -73,5 +73,3 @@ def sync_claude_md(path: Path = DEFAULT_CLAUDE_MD) -> None:
     if updated != existing:
         path.write_text(updated)
         print(f"Updated {path}")
-
-

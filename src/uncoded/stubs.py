@@ -5,7 +5,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from uncoded.extract import is_public, iter_source_files
+from uncoded.extract import iter_source_files
 
 
 @dataclass
@@ -81,7 +81,9 @@ def _extract_params(args: ast.arguments) -> list[StubParam]:
         params.append(StubParam(name=arg.arg, annotation=annotation))
 
     if args.vararg:
-        annotation = ast.unparse(args.vararg.annotation) if args.vararg.annotation else None
+        annotation = (
+            ast.unparse(args.vararg.annotation) if args.vararg.annotation else None
+        )
         params.append(StubParam(name=f"*{args.vararg.arg}", annotation=annotation))
     elif args.kwonlyargs:
         params.append(StubParam(name="*"))
@@ -91,7 +93,9 @@ def _extract_params(args: ast.arguments) -> list[StubParam]:
         params.append(StubParam(name=arg.arg, annotation=annotation))
 
     if args.kwarg:
-        annotation = ast.unparse(args.kwarg.annotation) if args.kwarg.annotation else None
+        annotation = (
+            ast.unparse(args.kwarg.annotation) if args.kwarg.annotation else None
+        )
         params.append(StubParam(name=f"**{args.kwarg.arg}", annotation=annotation))
 
     return params
@@ -120,10 +124,7 @@ def _extract_class(node: ast.ClassDef) -> StubClass:
     methods: list[StubFunction] = []
 
     for child in ast.iter_child_nodes(node):
-        if (
-            isinstance(child, ast.AnnAssign)
-            and isinstance(child.target, ast.Name)
-        ):
+        if isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
             annotation = ast.unparse(child.annotation) if child.annotation else None
             attributes.append(StubParam(name=child.target.id, annotation=annotation))
         elif isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -141,7 +142,7 @@ def _extract_class(node: ast.ClassDef) -> StubClass:
 
 
 def extract_stub(source: str, rel_path: str) -> StubModule:
-    """Parse Python source and extract all symbols with their signatures and line ranges."""
+    """Parse Python source and extract all symbols with signatures and line ranges."""
     tree = ast.parse(source)
     imports: list[str] = []
     classes: list[StubClass] = []
@@ -155,7 +156,9 @@ def extract_stub(source: str, rel_path: str) -> StubModule:
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             functions.append(_extract_function(node))
 
-    return StubModule(rel_path=rel_path, imports=imports, classes=classes, functions=functions)
+    return StubModule(
+        rel_path=rel_path, imports=imports, classes=classes, functions=functions
+    )
 
 
 def _render_param(p: StubParam) -> str:
@@ -168,12 +171,12 @@ def _render_param(p: StubParam) -> str:
 
 
 def _render_function(func: StubFunction, indent: str = "") -> list[str]:
-    """Render a function or method as stub lines, with an optional indent for methods."""
+    """Render a function or method as stub lines, indented for methods."""
     params_str = ", ".join(_render_param(p) for p in func.params)
     ret = f" -> {func.return_annotation}" if func.return_annotation else ""
     prefix = "async def" if func.is_async else "def"
     lines = [
-        f"{indent}{prefix} {func.name}({params_str}){ret}:  # L{func.start_line}-{func.end_line}"
+        f"{indent}{prefix} {func.name}({params_str}){ret}:  # L{func.start_line}-{func.end_line}"  # noqa: E501
     ]
     if func.docstring_excerpt:
         lines.append(f'{indent}    """{func.docstring_excerpt}"""')

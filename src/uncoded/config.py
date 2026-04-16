@@ -33,6 +33,6 @@ def read_source_roots() -> list[Path]:
     except KeyError:
         raise KeyError(
             "No [tool.uncoded] source-roots found in pyproject.toml."
-        )
+        ) from None
 
     return [Path(r) for r in roots]

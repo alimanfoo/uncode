@@ -159,7 +159,11 @@ class TestExtractStub:
                 pass
         """)
         module = extract_stub(source, "pkg/run.py")
-        assert module.imports == ["import os", "from pathlib import Path", "from typing import Optional"]
+        assert module.imports == [
+            "import os",
+            "from pathlib import Path",
+            "from typing import Optional",
+        ]
 
     def test_syntax_error_raises(self):
         with pytest.raises(SyntaxError):
@@ -193,9 +197,7 @@ class TestRenderStub:
     def test_function_line_range(self):
         module = StubModule(
             rel_path="pkg/mod.py",
-            functions=[
-                StubFunction(name="run", start_line=10, end_line=20)
-            ],
+            functions=[StubFunction(name="run", start_line=10, end_line=20)],
         )
         output = render_stub(module)
         assert "def run():  # L10-20\n    ..." in output
@@ -243,9 +245,7 @@ class TestRenderStub:
     def test_class_with_bases(self):
         module = StubModule(
             rel_path="pkg/mod.py",
-            classes=[
-                StubClass(name="Dog", bases=["Animal"], start_line=1, end_line=5)
-            ],
+            classes=[StubClass(name="Dog", bases=["Animal"], start_line=1, end_line=5)],
         )
         assert "class Dog(Animal):  # L1-5" in render_stub(module)
 

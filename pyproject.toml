@@ -43,6 +43,7 @@ testpaths = ["tests"]
 [tool.ruff]
 src = ["src"]
 line-length = 88
+extend-exclude = [".uncoded"]
 
 [tool.ruff.lint]
 select = [

@@ -7,7 +7,7 @@ from uncoded.claude_md import sync_claude_md
 from uncoded.config import read_source_roots
 from uncoded.extract import walk_source
 from uncoded.namespace_map import build_map, render_map
-from uncoded.stubs import DEFAULT_STUBS_OUTPUT, build_stubs
+from uncoded.stubs import build_stubs
 
 DEFAULT_MAP_OUTPUT = Path(".uncoded/namespace.yaml")
 
