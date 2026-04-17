@@ -9,8 +9,6 @@ hallucinated understanding of code that's sitting right there, unread.
 at the start of a task and navigate deterministically to what they need —
 no guessing, no grep.
 
-> **Early software.** The index format and CLI are still settling.
-
 ## What it generates
 
 Running `uncoded` produces two things under `.uncoded/`:
