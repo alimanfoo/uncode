@@ -1,4 +1,4 @@
-"""Extract public symbols from Python source files using the AST."""
+"""Extract symbols from Python source files using the AST."""
 
 import ast
 from collections.abc import Iterator
@@ -8,7 +8,7 @@ from pathlib import Path
 
 @dataclass
 class ClassInfo:
-    """A public class with its public attributes and methods."""
+    """A class with its attributes and methods."""
 
     name: str
     attributes: list[str] = field(default_factory=list)
@@ -17,23 +17,12 @@ class ClassInfo:
 
 @dataclass
 class ModuleInfo:
-    """Public symbols found in a single Python module."""
+    """Symbols found in a single Python module."""
 
     rel_path: str
     constants: list[str] = field(default_factory=list)
     classes: list[ClassInfo] = field(default_factory=list)
     functions: list[str] = field(default_factory=list)
-
-
-# Dunders treated as public — conventional module-level public API.
-_DUNDER_PUBLIC = frozenset({"__all__", "__version__"})
-
-
-def is_public(name: str) -> bool:
-    """A name is public if it has no leading underscore (or is a public dunder)."""
-    if name in _DUNDER_PUBLIC:
-        return True
-    return not name.startswith("_")
 
 
 def _property_kind(
@@ -64,7 +53,7 @@ def _assign_target_name(node: ast.Assign | ast.AnnAssign) -> str | None:
 
 
 def extract_module(source: str, rel_path: str) -> ModuleInfo:
-    """Parse Python source and extract public classes, functions, and constants."""
+    """Parse Python source and extract classes, functions, and constants."""
     tree = ast.parse(source)
 
     constants: list[str] = []
@@ -72,17 +61,15 @@ def extract_module(source: str, rel_path: str) -> ModuleInfo:
     functions: list[str] = []
 
     for node in ast.iter_child_nodes(tree):
-        if isinstance(node, ast.ClassDef) and is_public(node.name):
+        if isinstance(node, ast.ClassDef):
             attributes: list[str] = []
             methods: list[str] = []
             for n in ast.iter_child_nodes(node):
                 if isinstance(n, (ast.AnnAssign, ast.Assign)):
                     name = _assign_target_name(n)
-                    if name and is_public(name):
+                    if name:
                         attributes.append(name)
-                elif isinstance(
-                    n, (ast.FunctionDef, ast.AsyncFunctionDef)
-                ) and is_public(n.name):
+                elif isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     kind = _property_kind(n)
                     if kind == "setter" or kind == "deleter":
                         continue
@@ -93,17 +80,14 @@ def extract_module(source: str, rel_path: str) -> ModuleInfo:
             classes.append(
                 ClassInfo(name=node.name, attributes=attributes, methods=methods)
             )
-        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and is_public(
-            node.name
-        ):
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             functions.append(node.name)
         elif isinstance(node, (ast.Assign, ast.AnnAssign)):
             name = _assign_target_name(node)
-            if name and is_public(name):
+            if name:
                 constants.append(name)
         elif isinstance(node, ast.TypeAlias) and isinstance(node.name, ast.Name):
-            if is_public(node.name.id):
-                constants.append(node.name.id)
+            constants.append(node.name.id)
 
     return ModuleInfo(
         rel_path=rel_path,
@@ -116,11 +100,9 @@ def extract_module(source: str, rel_path: str) -> ModuleInfo:
 def iter_source_files(
     source_root: Path, base: Path | None = None
 ) -> Iterator[tuple[str, str]]:
-    """Yield (source_text, rel_path) for each candidate Python file.
+    """Yield (source_text, rel_path) for every Python file under *source_root*.
 
-    Includes __init__.py when it contains public symbols. Skips other
-    private modules (leading underscore) and private directories. Paths
-    are relative to *base* (defaults to cwd).
+    Paths are relative to *base* (defaults to cwd).
     """
     if base is None:
         base = Path.cwd()
@@ -129,29 +111,17 @@ def iter_source_files(
     base = base.resolve()
 
     for py_file in sorted(source_root.rglob("*.py")):
-        if py_file.name.startswith("_") and py_file.name != "__init__.py":
-            continue
-
-        try:
-            rel_to_root = py_file.relative_to(source_root)
-        except ValueError:
-            continue
-        if any(part.startswith("_") for part in rel_to_root.parts[:-1]):
-            continue
-
         rel_path = str(py_file.relative_to(base))
         yield py_file.read_text(), rel_path
 
 
 def walk_source(source_root: Path, base: Path | None = None) -> list[ModuleInfo]:
-    """Walk a source root and extract public symbols from all packages.
+    """Walk a source root and extract symbols from all Python files.
 
     Paths in the returned ModuleInfo are relative to *base* (defaults to
     cwd), so they can be used directly to open files from the repo root.
 
-    Includes __init__.py when it contains public symbols. Skips other
-    private modules (leading underscore), files with no public symbols,
-    and files with syntax errors.
+    Skips files with no symbols and files with syntax errors.
     """
     modules: list[ModuleInfo] = []
 

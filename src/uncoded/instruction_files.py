@@ -31,8 +31,8 @@ Read .uncoded/namespace.yaml
 Do this once, immediately, at session start — not "eventually" or "when
 a code question comes up." Without the map loaded, design and navigation
 answers will come from pretrained guesses rather than the code actually
-here. The map lists every public symbol in the codebase — directories,
-files, classes, methods, functions — in source order.
+here. The map lists every symbol in the codebase — directories, files,
+classes, methods, functions — in source order.
 
 **Step 2 — Understand.** Before reading any `.py` source file in this repo,
 read its `.pyi` stub first. Stub paths mirror source paths under
@@ -46,10 +46,10 @@ tests/test_foo.py   →  .uncoded/stubs/tests/test_foo.pyi
 This applies to every file you intend to touch or reference — including
 tests. The stub is sufficient for most navigation: it contains imports,
 every signature with types, first-sentence docstrings, and a `L<start>`
-or `L<start>-<end>` line range on every definition — public and private.
-Skipping to source means reading many lines to learn what the stub would
-have told you in one. If no stub exists at the expected path, the file
-has no public symbols indexed — in that narrow case, read source directly.
+or `L<start>-<end>` line range on every definition. Skipping to source
+means reading many lines to learn what the stub would have told you in
+one. If no stub exists at the expected path, the file has no symbols
+indexed — in that narrow case, read source directly.
 
 **Step 3 — Read source, never without offset and limit.** When you need
 source beyond what the stub shows, use the stub's line range:
