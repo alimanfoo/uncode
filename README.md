@@ -13,15 +13,14 @@ no guessing, no grep.
 
 Running `uncoded` produces two things under `.uncoded/`:
 
-**`namespace.yaml`** — a hierarchical YAML file listing every public symbol:
+**`namespace.yaml`** — a hierarchical YAML file listing every symbol:
 directories, files, classes (with attributes and methods), functions. Covers
 all configured source roots. An agent can load this at the start of a task
 and immediately know the full vocabulary of the codebase.
 
 **`stubs/`** — one `.pyi` stub per source file, with imports, full signatures
 (parameter names, types, return types), first-sentence docstrings, and an
-`L<start>-<end>` line range on every definition. Includes private symbols too,
-so an agent can follow a call into implementation detail without grepping.
+`L<start>-<end>` line range on every definition.
 
 `uncoded` also injects a navigation protocol into `CLAUDE.md`/`AGENTS.md`, so agents
 working in the repo pick up the instructions automatically.
@@ -82,7 +81,7 @@ stage the updated index before committing again. CI runs `pre-commit run
 When `uncoded` is set up, a navigation section is automatically maintained in
 `CLAUDE.md`. Agents following that protocol:
 
-1. Read `.uncoded/namespace.yaml` to orient — every public symbol, at a glance.
+1. Read `.uncoded/namespace.yaml` to orient — every symbol, at a glance.
 2. Read the relevant `.pyi` stubs to understand signatures and locate line ranges.
 3. Read only the source lines they need, using the `L<start>-<end>` ranges from the stubs.
 
