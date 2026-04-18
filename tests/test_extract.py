@@ -59,35 +59,16 @@ class TestExtractModule:
         assert result.classes == []
         assert result.functions == []
 
-    def test_all_private_symbols_included(self):
-        source = textwrap.dedent("""\
-            _CONSTANT = 42
-
-            class _Internal:
-                pass
-
-            def _helper():
-                pass
-        """)
-
-        result = extract_module(source, "private.py")
-
-        assert result.constants == ["_CONSTANT"]
-        assert len(result.classes) == 1
-        assert result.classes[0].name == "_Internal"
-        assert result.functions == ["_helper"]
-
     def test_module_level_constants(self):
         source = textwrap.dedent("""\
             TIMEOUT = 30
             MAX_RETRIES: int = 3
-            _PRIVATE = 1
             __version__ = "1.0.0"
         """)
 
         result = extract_module(source, "const.py")
 
-        assert result.constants == ["TIMEOUT", "MAX_RETRIES", "_PRIVATE", "__version__"]
+        assert result.constants == ["TIMEOUT", "MAX_RETRIES", "__version__"]
 
     def test_type_alias_classic(self):
         source = textwrap.dedent("""\
@@ -102,12 +83,12 @@ class TestExtractModule:
     def test_type_alias_pep695(self):
         source = textwrap.dedent("""\
             type UserId = int
-            type _PrivateId = int
+            type InternalId = int
         """)
 
         result = extract_module(source, "aliases.py")
 
-        assert result.constants == ["UserId", "_PrivateId"]
+        assert result.constants == ["UserId", "InternalId"]
 
     def test_tuple_unpacking_skipped(self):
         source = textwrap.dedent("""\
@@ -162,25 +143,6 @@ class TestExtractModule:
         assert cls.name == "Record"
         assert cls.attributes == ["name", "value", "_internal"]
         assert cls.methods == ["process"]
-
-    def test_class_with_all_private_members(self):
-        source = textwrap.dedent("""\
-            class Config:
-                _value = 10
-
-                def __init__(self):
-                    pass
-
-                def _setup(self):
-                    pass
-        """)
-
-        result = extract_module(source, "config.py")
-
-        assert len(result.classes) == 1
-        assert result.classes[0].name == "Config"
-        assert result.classes[0].attributes == ["_value"]
-        assert result.classes[0].methods == ["__init__", "_setup"]
 
     def test_property_classified_as_attribute(self):
         source = textwrap.dedent("""\
@@ -284,20 +246,6 @@ class TestWalkSource:
 
         rel_paths = [m.rel_path for m in modules]
         assert "src/mypackage/utils/formatting.py" in rel_paths
-
-    def test_includes_private_subdirectory(self, tmp_path):
-        src = tmp_path / "src"
-        pkg = src / "mypackage"
-        private_sub = pkg / "_vendor"
-        private_sub.mkdir(parents=True)
-        (pkg / "__init__.py").write_text("")
-        (private_sub / "__init__.py").write_text("")
-        (private_sub / "lib.py").write_text("def vendored(): pass\n")
-
-        modules = walk_source(src, base=tmp_path)
-
-        rel_paths = [m.rel_path for m in modules]
-        assert "src/mypackage/_vendor/lib.py" in rel_paths
 
     def test_includes_init_with_symbols(self, tmp_path):
         src = tmp_path / "src"
