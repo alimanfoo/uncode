@@ -67,8 +67,9 @@ exploratory.
 **For cross-file operations** — find references, rename, check whether a
 symbol is still used — prefer language-server MCP tools (`references`,
 `rename_symbol`, `definition`) over grep, if they are available. The
-namespace map supplies the dotted symbol names lookup tools expect; the
-stubs supply line numbers for positional tools."""
+namespace map and stubs give you the symbol names and line numbers these
+tools need. Use bare names (e.g. `extract_module`, `ClassInfo`). If a
+lookup returns empty, fall back to grep."""
 
 SECTION = f"{MARKER_START}\n{_SECTION_BODY}\n{MARKER_END}\n"
 

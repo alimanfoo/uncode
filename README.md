@@ -94,8 +94,8 @@ Three reads to navigate to any symbol in the codebase. No grep.
 
 Cross-file operations — find references, rename, check whether a symbol is
 still used — are better served by a language server than by grep. Uncoded's
-map supplies the dotted symbol names these tools take as input, and the
-stubs supply the line numbers.
+map supplies the symbol names these tools take as input, and the stubs
+supply the line numbers.
 
 To try it, install [isaacphi/mcp-language-server][lsp-mcp] and pyright:
 
@@ -120,6 +120,24 @@ at the repo root:
 
 An absolute path may be required for `--workspace` depending on how your
 MCP client launches the server.
+
+The MCP-launched pyright-langserver has no venv hint and — for src-layout
+repos (importable packages under `src/`) — doesn't treat your package as
+first-party, so cross-file references from `tests/` return empty. Add to
+your `pyproject.toml`:
+
+```toml
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["src"]
+```
+
+`venvPath` + `venv` point pyright at the same environment pytest uses, so
+it sees the same resolved dependencies. `extraPaths` makes pyright treat
+`src/` as first-party — without it, the package arrives via the editable
+install in site-packages and pyright doesn't link cross-file references
+into it. This assumes contributors have run `uv sync` (see dev setup below).
 
 [lsp-mcp]: https://github.com/isaacphi/mcp-language-server
 
