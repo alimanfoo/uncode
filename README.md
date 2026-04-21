@@ -98,97 +98,47 @@ The recommended setup is [oraios/serena][serena] as the MCP bridge with
 via `uvx`, so there's nothing to install globally; ty is downloaded by
 Serena on first use.
 
-### Quick setup
+### Setup
 
 ```
 uv run uncoded setup-serena
 ```
 
-Writes `.mcp.json`, `.serena/project.yml`, and `.claude/settings.json`
-with the configuration described below. Safe to re-run: the JSON files
-merge into existing content (so other MCP servers and permissions are
-preserved), and the Serena project YAML is left alone once present.
-Restart your agent afterwards so the new MCP server is picked up.
+Generates three files, tailored for Claude Code:
 
-### What the files do
+- **`.mcp.json`** — registers Serena as an MCP server, launched via `uvx`.
+- **`.serena/project.yml`** — picks ty as the backend, ignores `.uncoded/`,
+  drops the redundant `execute_shell_command`.
+- **`.claude/settings.json`** — enables the Serena server and allowlists
+  its navigation, rename, and memory tools.
 
-`.mcp.json` at the repo root registers the Serena MCP server:
+Safe to re-run: JSON files merge into existing content (so pre-existing
+MCP servers and permissions are preserved), and the Serena project YAML
+is left alone once present. Restart your agent afterwards so the new
+MCP server is picked up.
 
-```json
-{
-  "mcpServers": {
-    "serena": {
-      "command": "uvx",
-      "args": [
-        "--from", "serena-agent==1.1.2",
-        "serena", "start-mcp-server",
-        "--context", "claude-code",
-        "--transport", "stdio",
-        "--project-from-cwd",
-        "--open-web-dashboard", "false"
-      ]
-    }
-  }
-}
-```
+### Why these choices
 
-(Replace `claude-code` with your client's context name if different.)
+- **`python_ty`** selects ty over Serena's default (pyright); ty handles
+  src-layout repos natively, so no `venvPath` / `extraPaths` config is
+  needed.
+- **`ignored_paths: [".uncoded"]`** keeps Serena's symbol tools out of
+  uncoded's generated stubs — otherwise a rename would silently rewrite
+  them.
+- **`excluded_tools: [execute_shell_command]`** drops a duplicate of the
+  shell access your MCP client already exposes.
+- The Claude allowlist covers navigation (`find_*`, `get_symbols_overview`),
+  symbol-aware edits (`rename_symbol`, `insert_*`, `replace_symbol_body`,
+  `safe_delete_symbol`), and Serena's memory tools — which read and write
+  `.serena/memories/`, not your code. `open_dashboard` is intentionally
+  omitted; interactive browser popups are noise. If you'd rather keep a
+  human approval moment before code-mutating calls, drop the symbol-edit
+  entries from the generated allowlist — `git diff` is the real safety
+  net either way.
 
-`.serena/project.yml` picks ty as the backend:
-
-```yaml
-project_name: "<your-project>"
-languages: ["python_ty"]
-ignored_paths:
-  - ".uncoded"
-excluded_tools:
-  - execute_shell_command
-```
-
-`languages: ["python_ty"]` selects ty over Serena's default (pyright); ty
-handles src-layout repos natively, so no `venvPath` / `extraPaths` config
-is needed. `ignored_paths` keeps Serena out of uncoded's generated stubs —
-otherwise a rename would silently rewrite them. `excluded_tools` drops
-Serena's `execute_shell_command`, which duplicates the shell access your
-MCP client already exposes.
-
-`.claude/settings.json` auto-enables the Serena server in Claude Code
-and allowlists the tools you want:
-
-```json
-{
-  "enabledMcpjsonServers": ["serena"],
-  "permissions": {
-    "allow": [
-      "mcp__serena__find_symbol",
-      "mcp__serena__find_referencing_symbols",
-      "mcp__serena__get_symbols_overview",
-      "mcp__serena__check_onboarding_performed",
-      "mcp__serena__initial_instructions",
-      "mcp__serena__list_memories",
-      "mcp__serena__read_memory",
-      "mcp__serena__rename_symbol",
-      "mcp__serena__insert_after_symbol",
-      "mcp__serena__insert_before_symbol",
-      "mcp__serena__replace_symbol_body",
-      "mcp__serena__safe_delete_symbol",
-      "mcp__serena__write_memory",
-      "mcp__serena__edit_memory",
-      "mcp__serena__delete_memory",
-      "mcp__serena__rename_memory",
-      "mcp__serena__onboarding"
-    ]
-  }
-}
-```
-
-This covers navigation (`find_*`, `get_symbols_overview`), rename and
-structural symbol edits (`rename_symbol`, `insert_*`, `replace_symbol_body`,
-`safe_delete_symbol`), and Serena's memory tools — which read and write
-`.serena/memories/`, not your code. `open_dashboard` is intentionally
-omitted; it opens a browser window and is interactive noise. If you'd
-rather keep a human approval moment before code-mutating calls, drop the
-symbol-edit entries — `git diff` is the real safety net either way.
+Not using Claude Code? The generated `.serena/project.yml` is
+MCP-client-agnostic, and `.mcp.json` can serve as a starting point —
+replace `claude-code` with your client's context name.
 
 [serena]: https://github.com/oraios/serena
 [ty]: https://github.com/astral-sh/ty
