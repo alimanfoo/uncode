@@ -9,6 +9,8 @@ hallucinated understanding of code that's sitting right there, unread.
 at the start of a task and navigate deterministically to what they need —
 no guessing, no grep.
 
+Additionally, **uncoded** provides some convenience for setting up your coding agent with a language server, so they can reliably find symbol usages and rename or delete symbols safely.
+
 ## What it generates
 
 Running `uncoded` produces two things under `.uncoded/`:
