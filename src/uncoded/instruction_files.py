@@ -62,7 +62,14 @@ Calling Read on a `.py` file without `offset` and `limit` is a protocol
 violation — it means either Step 2 was skipped, or you are reading more
 of the file than the stub said you needed. The one exception is the
 first Read of a stub-less file (see Step 2), which is genuinely
-exploratory."""
+exploratory.
+
+**For cross-file operations** — find references, rename, check whether a
+symbol is still used — prefer a language-server MCP bridge like Serena
+(`find_symbol`, `find_referencing_symbols`, `rename_symbol`) over grep,
+if one is available. The namespace map gives the `name_path` (e.g.
+`ClassName/method` for a method, `function_name` for a top-level
+function) and `relative_path` these tools take as input."""
 
 SECTION = f"{MARKER_START}\n{_SECTION_BODY}\n{MARKER_END}\n"
 

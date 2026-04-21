@@ -87,6 +87,98 @@ When `uncoded` is set up, a navigation section is automatically maintained in
 
 Three reads to navigate to any symbol in the codebase. No grep.
 
+## Using uncoded with a language server
+
+Cross-file operations — find references, rename, check whether a symbol is
+still used — are better served by a language server than by grep. Uncoded's
+map supplies the `name_path` and `relative_path` these tools take as input.
+
+The recommended setup is [oraios/serena][serena] as the MCP bridge with
+[astral-sh/ty][ty] as the Python language-server backend. Serena launches
+via `uvx`, so there's nothing to install globally; ty is downloaded by
+Serena on first use.
+
+For Claude Code, add `.mcp.json` at the repo root:
+
+```json
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from", "serena-agent==1.1.2",
+        "serena", "start-mcp-server",
+        "--context", "claude-code",
+        "--transport", "stdio",
+        "--project-from-cwd",
+        "--open-web-dashboard", "false"
+      ]
+    }
+  }
+}
+```
+
+(Replace `claude-code` with your client's context name if different.)
+
+And `.serena/project.yml` to pick ty as the backend:
+
+```yaml
+project_name: "<your-project>"
+languages: ["python_ty"]
+ignored_paths:
+  - ".uncoded"
+excluded_tools:
+  - execute_shell_command
+```
+
+`languages: ["python_ty"]` selects ty over Serena's default (pyright); ty
+handles src-layout repos natively, so no `venvPath` / `extraPaths` config
+is needed. `ignored_paths` keeps Serena out of uncoded's generated stubs —
+otherwise a rename would silently rewrite them. `excluded_tools` drops
+Serena's `execute_shell_command`, which duplicates the shell access your
+MCP client already exposes.
+
+For Claude Code, commit `.claude/settings.json` to auto-enable the Serena
+server and allowlist the tools you want:
+
+```json
+{
+  "enabledMcpjsonServers": ["serena"],
+  "permissions": {
+    "allow": [
+      "mcp__serena__find_symbol",
+      "mcp__serena__find_referencing_symbols",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__check_onboarding_performed",
+      "mcp__serena__initial_instructions",
+      "mcp__serena__list_memories",
+      "mcp__serena__read_memory",
+      "mcp__serena__rename_symbol",
+      "mcp__serena__insert_after_symbol",
+      "mcp__serena__insert_before_symbol",
+      "mcp__serena__replace_symbol_body",
+      "mcp__serena__safe_delete_symbol",
+      "mcp__serena__write_memory",
+      "mcp__serena__edit_memory",
+      "mcp__serena__delete_memory",
+      "mcp__serena__rename_memory",
+      "mcp__serena__onboarding"
+    ]
+  }
+}
+```
+
+This covers navigation (`find_*`, `get_symbols_overview`), rename and
+structural symbol edits (`rename_symbol`, `insert_*`, `replace_symbol_body`,
+`safe_delete_symbol`), and Serena's memory tools — which read and write
+`.serena/memories/`, not your code. `open_dashboard` is intentionally
+omitted; it opens a browser window and is interactive noise. If you'd
+rather keep a human approval moment before code-mutating calls, drop the
+symbol-edit entries — `git diff` is the real safety net either way.
+
+[serena]: https://github.com/oraios/serena
+[ty]: https://github.com/astral-sh/ty
+
 ## Dev setup
 
 Clone, install dependencies, and wire up the pre-commit hooks:
