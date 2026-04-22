@@ -9,6 +9,8 @@ hallucinated understanding of code that's sitting right there, unread.
 at the start of a task and navigate deterministically to what they need —
 no guessing, no grep.
 
+Additionally, **uncoded** provides some convenience for setting up your coding agent with a language server, so they can reliably find symbol usages and rename or delete symbols safely.
+
 ## What it generates
 
 Running `uncoded` produces two things under `.uncoded/`:
@@ -73,8 +75,9 @@ Add `uncoded` as a pre-commit hook so the index stays in sync automatically:
 ```
 
 Like `ruff format`: if `uncoded` modifies any files, the commit fails and you
-stage the updated index before committing again. CI runs `pre-commit run
---all-files` to verify the index is up to date.
+stage the updated index before committing again.
+
+You can also set up your CI to run `pre-commit run --all-files` to verify the index is up to date.
 
 ## Verify the index is fresh
 
@@ -132,26 +135,7 @@ MCP servers and permissions are preserved), and the Serena project YAML
 is left alone once present. Restart your agent afterwards so the new
 MCP server is picked up.
 
-### Why these choices
-
-- **`python_ty`** selects ty over Serena's default (pyright); ty handles
-  src-layout repos natively, so no `venvPath` / `extraPaths` config is
-  needed.
-- **`ignored_paths: [".uncoded"]`** keeps Serena's symbol tools out of
-  uncoded's generated stubs — otherwise a rename would silently rewrite
-  them.
-- **`excluded_tools: [execute_shell_command]`** drops a duplicate of the
-  shell access your MCP client already exposes.
-- The Claude allowlist covers navigation (`find_*`, `get_symbols_overview`),
-  symbol-aware edits (`rename_symbol`, `insert_*`, `replace_symbol_body`,
-  `safe_delete_symbol`), and Serena's memory tools — which read and write
-  `.serena/memories/`, not your code. `open_dashboard` is intentionally
-  omitted; interactive browser popups are noise. If you'd rather keep a
-  human approval moment before code-mutating calls, drop the symbol-edit
-  entries from the generated allowlist — `git diff` is the real safety
-  net either way.
-
-Not using Claude Code? The generated `.serena/project.yml` is
+If you're not using Claude Code, the generated `.serena/project.yml` is
 MCP-client-agnostic, and `.mcp.json` can serve as a starting point —
 replace `claude-code` with your client's context name.
 
