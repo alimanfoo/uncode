@@ -13,10 +13,10 @@ from uncoded.sync import sync_file
 
 DEFAULT_MAP_OUTPUT = Path('.uncoded/namespace.yaml')  # L15
 
-def _build(*, check: bool) -> int:  # L18-57
-    """Build (or verify) the namespace map, stub files, and instruction-file sections."""
+def _sync(*, check: bool) -> int:  # L18-57
+    """Sync (or verify) the namespace map, stub files, and instruction-file sections."""
     ...
 
-def main() -> int:  # L60-95
+def main() -> int:  # L60-99
     """Dispatch the uncoded CLI."""
     ...

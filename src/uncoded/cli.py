@@ -15,8 +15,8 @@ from uncoded.sync import sync_file
 DEFAULT_MAP_OUTPUT = Path(".uncoded/namespace.yaml")
 
 
-def _build(*, check: bool = False) -> int:
-    """Build (or verify) the namespace map, stub files, and instruction-file sections.
+def _sync(*, check: bool = False) -> int:
+    """Sync (or verify) the namespace map, stub files, and instruction-file sections.
 
     When ``check=True``, the on-disk tree is not mutated: each step reports
     whether it would write. Returns 1 if any step reports a prospective
@@ -60,27 +60,31 @@ def _build(*, check: bool = False) -> int:
 def main() -> int:
     """Dispatch the uncoded CLI.
 
-    With no subcommand, rebuilds the navigation index (default behaviour);
-    with ``--check``, reports whether a rebuild would change anything and
-    exits non-zero if so. The ``setup-serena`` subcommand generates MCP and
-    Claude Code config for the recommended Serena + ty LSP integration.
+    Three subcommands: ``sync`` builds or refreshes the navigation index;
+    ``check`` verifies the index matches what a rebuild would produce
+    (exits non-zero on drift, useful in CI); ``setup-serena`` generates
+    MCP and Claude Code config for the recommended Serena + ty LSP
+    integration.
     """
     parser = argparse.ArgumentParser(
         prog="uncoded",
-        description=(
-            "Build a navigation index for AI coding agents. Run with no "
-            "arguments to (re)build the index."
+        description="Build a navigation index for AI coding agents.",
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser(
+        "sync",
+        help=(
+            "Build or refresh the namespace map, stub files, and "
+            "instruction-file sections."
         ),
     )
-    parser.add_argument(
-        "--check",
-        action="store_true",
+    subparsers.add_parser(
+        "check",
         help=(
             "Verify the index is up to date without writing. Exits non-zero "
             "if any file would change. Useful in CI."
         ),
     )
-    subparsers = parser.add_subparsers(dest="command")
     subparsers.add_parser(
         "setup-serena",
         help=(
@@ -92,4 +96,4 @@ def main() -> int:
 
     if args.command == "setup-serena":
         return setup_serena()
-    return _build(check=args.check)
+    return _sync(check=args.command == "check")
