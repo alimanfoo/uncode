@@ -9,7 +9,7 @@ hallucinated understanding of code that's sitting right there, unread.
 at the start of a task and navigate deterministically to what they need —
 no guessing, no grep.
 
-Additionally, **uncoded** provides some convenience for setting up your coding agent with a language server, so they can reliably find symbol usages and rename or delete symbols safely.
+Additionally, **uncoded** provides some convenience for setting up your coding agent with a language server, so they can reliably find symbol usages and rename, edit, or delete symbols safely.
 
 ## What it generates
 
@@ -108,9 +108,10 @@ Three reads to navigate to any symbol in the codebase. No grep.
 
 ## Using uncoded with a language server
 
-Cross-file operations — find references, rename, check whether a symbol is
-still used — are better served by a language server than by grep. Uncoded's
-map supplies the `name_path` and `relative_path` these tools take as input.
+Symbol-level operations — finding callers, reading or editing a single
+symbol, renaming, safe deletion — are better served by a language server
+than by grep and freeform text edits. Uncoded's map supplies the
+`name_path` and `relative_path` these tools take as input.
 
 The recommended setup is [oraios/serena][serena] as the MCP bridge with
 [astral-sh/ty][ty] as the Python language-server backend. Serena launches
@@ -129,7 +130,7 @@ Generates three files, tailored for Claude Code:
 - **`.serena/project.yml`** — picks ty as the backend, ignores `.uncoded/`,
   drops the redundant `execute_shell_command`.
 - **`.claude/settings.json`** — enables the Serena server and allowlists
-  its navigation, rename, and memory tools.
+  its navigation, edit, and memory tools.
 
 Safe to re-run: JSON files merge into existing content (so pre-existing
 MCP servers and permissions are preserved), and the Serena project YAML
