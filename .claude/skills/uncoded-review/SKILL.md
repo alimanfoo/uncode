@@ -152,6 +152,16 @@ documented it rather than fixing it.
 The stub itself is the evidence. Quote the stub excerpt (name, signature,
 first-line docstring) verbatim in the finding.
 
+**When to read source.** The stub is usually sufficient for discovery — the
+inconsistency IS the mismatch between name, signature, and docstring, all of
+which the stub provides. Read the symbol body when a finding is already
+identified but confidence is genuinely uncertain: an undocumented parameter
+where significance depends on what it controls; a name–behaviour mismatch where
+the stub alone doesn't confirm it; a defensive docstring you want to verify is
+accurate. Use Serena's `find_symbol` with `include_body=True` — targeted to the
+symbol, no offset arithmetic, no risk of over-reading. Never read a whole source
+file during this sweep.
+
 ## Step 4: Structural sweep
 
 Combine the namespace with the import graph and, if available, Serena's
@@ -192,8 +202,9 @@ Check systematically, not by spot-check:
 function in the same module where the function's sole body is `return
 <constant>`. Both symbols being public exposes an implementation detail
 unnecessarily — only one needs to be public. Detection: look for parameterless
-public functions with a trivial single-line body, then check whether they
-return a public symbol from the same module.
+public functions with a trivial single-line body (visible from the stub's line
+range), then verify the body with Serena's `find_symbol` with
+`include_body=True` before reporting.
 
 ## Report format
 
