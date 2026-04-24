@@ -1,22 +1,6 @@
-"""Generate the uncoded-review skill file for the target repository."""
-
-from pathlib import Path
-
-from uncoded.sync import sync_file
-
-SKILL_OUTPUTS = [
-    Path(".claude/skills/uncoded-review/SKILL.md"),  # Claude Code
-    Path(".agents/skills/uncoded-review/SKILL.md"),  # Codex
-]
-
-_SKILL_CONTENT = """\
 ---
 name: uncoded-review
-description: "Perform a coherence review of a Python codebase: a diagnostic sweep \
-for semantic drift, naming inconsistency, promissory mismatch, and structural \
-incoherence. Produces a Markdown report of findings with verbatim evidence and \
-confidence levels, for human investigation. Assumes uncoded is installed \
-(.uncoded/namespace.yaml and .uncoded/stubs/ present)."
+description: "Perform a coherence review of a Python codebase: a diagnostic sweep for semantic drift, naming inconsistency, promissory mismatch, and structural incoherence. Produces a Markdown report of findings with verbatim evidence and confidence levels, for human investigation. Assumes uncoded is installed (.uncoded/namespace.yaml and .uncoded/stubs/ present)."
 ---
 
 # Coherence Review
@@ -373,10 +357,3 @@ files.</scenario>
 semantics of absence differ — e.g. some functions return None on failure while
 others raise, for the same kind of operation.</flag>
 </example>
-"""
-
-
-def sync_skill(*, check: bool) -> bool:
-    """Write the uncoded-review skill file to all supported agent locations."""
-    results = [sync_file(path, _SKILL_CONTENT, check=check) for path in SKILL_OUTPUTS]
-    return any(results)

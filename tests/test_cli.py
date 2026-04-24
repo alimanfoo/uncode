@@ -13,6 +13,7 @@ import textwrap
 import pytest
 
 from uncoded import cli
+from uncoded.skill import SKILL_OUTPUTS
 
 
 def _init_repo(tmp_path, source_roots=("src",)):
@@ -43,9 +44,8 @@ class TestSyncApplyMode:
         assert (tmp_path / ".uncoded" / "namespace.yaml").exists()
         assert (tmp_path / ".uncoded" / "stubs" / "src" / "foo.pyi").exists()
         assert (tmp_path / "CLAUDE.md").exists()
-        assert (
-            tmp_path / ".claude" / "skills" / "uncoded-review" / "SKILL.md"
-        ).exists()
+        for skill_path in SKILL_OUTPUTS:
+            assert (tmp_path / skill_path).exists()
 
     def test_idempotent_second_run(self, tmp_path):
         _init_repo(tmp_path)
@@ -56,11 +56,7 @@ class TestSyncApplyMode:
             (tmp_path / ".uncoded" / "stubs" / "src" / "foo.pyi").stat().st_mtime_ns
         )
         claude_mtime = (tmp_path / "CLAUDE.md").stat().st_mtime_ns
-        skill_mtime = (
-            (tmp_path / ".claude" / "skills" / "uncoded-review" / "SKILL.md")
-            .stat()
-            .st_mtime_ns
-        )
+        skill_mtimes = [(tmp_path / p).stat().st_mtime_ns for p in SKILL_OUTPUTS]
 
         # A second run with no source changes must not rewrite any artifact.
         assert cli._sync() == 0
@@ -69,9 +65,9 @@ class TestSyncApplyMode:
             tmp_path / ".uncoded" / "stubs" / "src" / "foo.pyi"
         ).stat().st_mtime_ns == stub_mtime
         assert (tmp_path / "CLAUDE.md").stat().st_mtime_ns == claude_mtime
-        assert (
-            tmp_path / ".claude" / "skills" / "uncoded-review" / "SKILL.md"
-        ).stat().st_mtime_ns == skill_mtime
+        assert [
+            (tmp_path / p).stat().st_mtime_ns for p in SKILL_OUTPUTS
+        ] == skill_mtimes
 
     def test_error_when_no_pyproject_toml(self, tmp_path, capsys):
         os.chdir(tmp_path)
