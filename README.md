@@ -24,9 +24,10 @@ and immediately know the full vocabulary of the codebase.
 signatures (parameter names, types, return types), first-sentence docstrings,
 and an `L<start>-<end>` line range on every definition.
 
-**`.claude/skills/uncoded-review/SKILL.md`** — a Claude Code skill for running
-a coherence review of the codebase (see [Coherence review](#coherence-review)
-below).
+**`.claude/skills/uncoded-review/SKILL.md`** and
+**`.agents/skills/uncoded-review/SKILL.md`** — a coherence review skill,
+written to both Claude Code and Codex skill directories (see
+[Coherence review](#coherence-review) below).
 
 `uncoded` also injects a navigation protocol into `CLAUDE.md`/`AGENTS.md`, so agents
 working in the repo pick up the instructions automatically.
