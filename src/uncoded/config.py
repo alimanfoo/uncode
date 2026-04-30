@@ -1,4 +1,4 @@
-"""Read uncoded configuration from pyproject.toml."""
+"""Read project metadata and uncoded configuration from pyproject.toml."""
 
 import tomllib
 from pathlib import Path
