@@ -7,8 +7,7 @@ import yaml
 from uncoded.serena_setup import (
     SERENA_ALLOWED_TOOLS,
     SERENA_VERSION,
-    read_project_name,
-    setup_serena,
+    setup,
 )
 
 REPO_ROOT = Path(__file__).parent.parent
@@ -31,32 +30,11 @@ EXPECTED_EXCLUDED_TOOLS = {
 }
 
 
-class TestReadProjectName:
-    def test_reads_name_from_pyproject_toml(self, tmp_path):
-        (tmp_path / "pyproject.toml").write_text('[project]\nname = "my-app"\n')
-        os.chdir(tmp_path)
-        assert read_project_name() == "my-app"
-
-    def test_falls_back_to_cwd_name_when_no_pyproject(self, tmp_path):
-        os.chdir(tmp_path)
-        assert read_project_name() == tmp_path.name
-
-    def test_falls_back_to_cwd_name_when_no_project_section(self, tmp_path):
-        (tmp_path / "pyproject.toml").write_text("[tool.ruff]\n")
-        os.chdir(tmp_path)
-        assert read_project_name() == tmp_path.name
-
-    def test_falls_back_to_cwd_name_when_name_missing(self, tmp_path):
-        (tmp_path / "pyproject.toml").write_text('[project]\nversion = "0.1"\n')
-        os.chdir(tmp_path)
-        assert read_project_name() == tmp_path.name
-
-
-class TestSetupSerena:
+class TestSetup:
     def _run(self, tmp_path, name="my-app"):
         (tmp_path / "pyproject.toml").write_text(f'[project]\nname = "{name}"\n')
         os.chdir(tmp_path)
-        return setup_serena()
+        return setup()
 
     def test_creates_all_three_files(self, tmp_path):
         assert self._run(tmp_path) == 0
@@ -164,7 +142,7 @@ class TestSetupSerena:
 
     def test_falls_back_to_cwd_name_when_no_pyproject(self, tmp_path):
         os.chdir(tmp_path)
-        setup_serena()
+        setup()
         data = yaml.safe_load((tmp_path / ".serena" / "project.yml").read_text())
         assert data["project_name"] == tmp_path.name
 

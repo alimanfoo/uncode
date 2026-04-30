@@ -25,10 +25,9 @@ to avoid clobbering hand-edited Serena config.
 """
 
 import json
-import tomllib
 from pathlib import Path
 
-from uncoded.config import find_pyproject_toml
+from uncoded.config import read_project_name
 
 # Pin the Serena version so every repo that runs `uncoded setup` gets
 # the same, tested integration. On bump, re-run `uncoded setup` to
@@ -89,19 +88,6 @@ _STATUS_VERB = {
     "updated": "Updated",
     "unchanged": "Unchanged",
 }
-
-
-def read_project_name() -> str:
-    """Read the project name from pyproject.toml, falling back to the cwd name."""
-    toml_path = find_pyproject_toml()
-    if toml_path is None:
-        return Path.cwd().name
-    with toml_path.open("rb") as f:
-        data = tomllib.load(f)
-    try:
-        return data["project"]["name"]
-    except KeyError:
-        return Path.cwd().name
 
 
 def _sync_mcp_json(path: Path) -> str:
@@ -178,7 +164,7 @@ def _sync_claude_settings(path: Path) -> str:
     return status
 
 
-def setup_serena(root: Path | None = None) -> int:
+def setup(root: Path | None = None) -> int:
     """Generate Serena + ty + Claude Code configuration under ``root``.
 
     JSON files merge into existing content, refreshing the Serena
