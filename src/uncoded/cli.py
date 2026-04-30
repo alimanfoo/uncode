@@ -80,7 +80,7 @@ def main() -> int:
         prog="uncoded",
         description="Build a navigation index for AI coding agents.",
     )
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers = parser.add_subparsers(required=True)
 
     sync_parser = subparsers.add_parser(
         "sync",
