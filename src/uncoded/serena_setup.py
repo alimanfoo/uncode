@@ -14,8 +14,9 @@ automatically:
   memory-based project understanding is redundant and noisy alongside
   it.
 * ``.claude/settings.json`` — enables the Serena server and allowlists
-  the eight LSP tools (symbol lookup, reference search, and the edit
-  family) so they run without a prompt.
+  the nine tools (``initial_instructions`` plus the eight LSP tools —
+  symbol lookup, reference search, and the edit family) so they run
+  without a prompt.
 
 JSON files merge into existing content: pre-existing non-Serena MCP
 servers and permissions are preserved, while the Serena entry itself
