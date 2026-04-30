@@ -26,6 +26,11 @@ Two-level index:
    imports, full signatures (parameter names, types, return types),
    first-sentence docstrings, module constants, and class attributes.
 
+Alongside the index, uncoded also ships a one-shot setup for a language
+server, so agents can find references, rename, and safely delete symbols
+by name rather than via grep and text edits. See "How to read and edit
+code in this codebase" below for the dispatch rule.
+
 ## Commands
 
 This project uses [uv](https://docs.astral.sh/uv/). Run commands via
