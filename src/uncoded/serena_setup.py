@@ -14,8 +14,9 @@ automatically:
   memory-based project understanding is redundant and noisy alongside
   it.
 * ``.claude/settings.json`` — enables the Serena server and allowlists
-  the eight LSP tools (symbol lookup, reference search, and the edit
-  family) so they run without a prompt.
+  the nine tools (``initial_instructions`` plus the eight LSP tools —
+  symbol lookup, reference search, and the edit family) so they run
+  without a prompt.
 
 JSON files merge into existing content: pre-existing non-Serena MCP
 servers and permissions are preserved, while the Serena entry itself
@@ -117,7 +118,7 @@ def _sync_mcp_json(path: Path) -> str:
     return status
 
 
-def _sync_serena_project(path: Path, project_name: str) -> str:
+def _write_serena_project_if_absent(path: Path, project_name: str) -> str:
     """Write ``.serena/project.yml`` if absent.
 
     Returns ``wrote`` or ``unchanged``. An existing file is never touched:
@@ -164,6 +165,7 @@ def _sync_claude_settings(path: Path) -> str:
     return status
 
 
+# `root` is an injection seam for tests; the CLI always uses `Path.cwd()`.
 def setup(root: Path | None = None) -> int:
     """Generate Serena + ty + Claude Code configuration under ``root``.
 
@@ -181,7 +183,7 @@ def setup(root: Path | None = None) -> int:
 
     results = [
         (mcp_path, _sync_mcp_json(mcp_path)),
-        (serena_path, _sync_serena_project(serena_path, project_name)),
+        (serena_path, _write_serena_project_if_absent(serena_path, project_name)),
         (claude_path, _sync_claude_settings(claude_path)),
     ]
     for path, status in results:

@@ -26,6 +26,11 @@ Two-level index:
    imports, full signatures (parameter names, types, return types),
    first-sentence docstrings, module constants, and class attributes.
 
+Alongside the index, uncoded also ships a one-shot setup for a language
+server, so agents can find references, rename, and safely delete symbols
+by name rather than via grep and text edits. See "How to read and edit
+code in this codebase" below for the dispatch rule.
+
 ## Commands
 
 This project uses [uv](https://docs.astral.sh/uv/). Run commands via
@@ -33,7 +38,7 @@ This project uses [uv](https://docs.astral.sh/uv/). Run commands via
 an activated venv.
 
 ```
-# Generate (or update) the namespace map, stub files, and CLAUDE.md section
+# Generate (or update) the namespace map, stub files, and instruction-file section
 uv run uncoded sync
 
 # Run tests
@@ -134,6 +139,11 @@ With the map and stub loaded, you have the exact `relative_path` and
   then Edit) can drift — the reference check goes stale the moment
   any file changes between the calls. Whenever the task is "remove
   this symbol," regardless of how dead it looks, this is the tool.
+
+Skip `activate_project` and `check_onboarding_performed`. The project
+is already active by default, and `check_onboarding_performed` only
+gates Serena's `onboarding` flow — which writes memories that uncoded
+deliberately disables. Both calls produce only noise.
 
 ### Where Read, Edit, and grep are still the right tools
 

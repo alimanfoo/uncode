@@ -44,7 +44,7 @@ class TestSetup:
     def test_does_not_duplicate_on_second_merge(self, tmp_path):
         ...
 
-    def test_falls_back_to_cwd_name_when_no_pyproject(self, tmp_path):
+    def test_setup_uses_cwd_name_when_no_pyproject(self, tmp_path):
         ...
 
 class TestRepoDogfooding:
