@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "uncoded"
 dynamic = ["version"]
-description = "Static symbol indexes for AI-assisted code navigation"
+description = "Symbol indexes and Serena setup for AI-assisted code navigation"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
