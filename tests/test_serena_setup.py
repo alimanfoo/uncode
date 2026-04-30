@@ -177,7 +177,10 @@ class TestRepoDogfooding:
     def test_repo_mcp_json_pins_same_serena_version(self):
         mcp = json.loads((REPO_ROOT / ".mcp.json").read_text())
         args = mcp["mcpServers"]["serena"]["args"]
-        assert f"serena-agent=={SERENA_VERSION}" in args
+        assert args == EXPECTED_MCP_ARGS, (
+            "repo's .mcp.json has drifted from MCP_SERVER_SERENA — "
+            "re-run `uncoded setup` against this repo to refresh the pin"
+        )
 
     def test_repo_claude_settings_allowlists_every_serena_tool(self):
         settings = json.loads((REPO_ROOT / ".claude" / "settings.json").read_text())
