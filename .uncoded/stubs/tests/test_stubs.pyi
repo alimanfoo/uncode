@@ -1,8 +1,9 @@
 # tests/test_stubs.py
 
 import textwrap
+from pathlib import Path
 import pytest
-from uncoded.stubs import StubAssignment, StubClass, StubFunction, StubModule, StubParam, build_stubs, extract_stub, render_stub
+from uncoded.stubs import StubAssignment, StubClass, StubFunction, StubModule, StubParam, _write_stubs, build_stubs, extract_stub, render_stub
 
 class TestExtractStub:
 
@@ -40,6 +41,9 @@ class TestExtractStub:
         ...
 
     def test_no_docstring(self):
+        ...
+
+    def test_whitespace_only_docstring_yields_none(self):
         ...
 
     def test_module_docstring_extracted(self):
@@ -201,4 +205,16 @@ class TestBuildStubsCheckMode:
         ...
 
     def test_detects_orphan_stub_without_removing_it(self, tmp_path):
+        ...
+
+class TestWriteStubs:
+    """The IO half: writes stubs from a generated dict, prunes orphans."""
+
+    def test_writes_stubs(self, tmp_path):
+        ...
+
+    def test_check_mode_does_not_write(self, tmp_path):
+        ...
+
+    def test_prunes_orphan_stubs(self, tmp_path):
         ...

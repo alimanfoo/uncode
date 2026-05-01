@@ -145,6 +145,50 @@ class TestSyncApplyMode:
         assert len(skip_warnings) == 1
         assert skip_warnings[0].startswith("warning: skipping src/broken.py")
         assert "SyntaxError" in skip_warnings[0]
+        # Pipeline still completes for the non-broken file: the half of
+        # the contract the warning-count assertion alone doesn't pin.
+        assert (tmp_path / ".uncoded" / "stubs" / "src" / "good.pyi").exists()
+
+    def test_root_param_anchors_reads_at_project_root_when_cwd_is_subdir(
+        self, tmp_path, monkeypatch
+    ):
+        # When ``_sync(root=...)`` is called with cwd inside a project
+        # subdirectory, the *read* anchor (source-root resolution and
+        # rel-path rendering in the namespace map) follows the project
+        # root derived from ``root``, not cwd. Output paths are still
+        # cwd-relative — that's documented as a separate concern, so
+        # this test only pins the read seam.
+        (tmp_path / "pyproject.toml").write_text(
+            textwrap.dedent(
+                """\
+                [project]
+                name = "demo"
+
+                [tool.uncoded]
+                source-roots = ["src"]
+                """
+            )
+        )
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "foo.py").write_text("def hello(): pass\n")
+        # cwd is the source subdirectory; the seam under test is whether
+        # ``root=tmp_path`` re-anchors reads at the project root.
+        monkeypatch.chdir(tmp_path / "src")
+
+        assert cli._sync(root=tmp_path) == 0
+
+        # Output paths are cwd-relative; namespace.yaml landed under the
+        # subdirectory we ran from. That's the documented behaviour.
+        namespace_path = tmp_path / "src" / ".uncoded" / "namespace.yaml"
+        assert namespace_path.exists()
+
+        # The rel-path inside is project-anchored: ``src/foo.py`` (from
+        # tmp_path), not ``foo.py`` (from cwd). If the read anchor had
+        # leaked back to cwd, the file would appear as a top-level
+        # ``foo.py`` key with no ``src/`` directory wrapper.
+        content = namespace_path.read_text()
+        assert "src/:" in content
+        assert "foo.py:" in content
 
 
 class TestSyncCheckMode:

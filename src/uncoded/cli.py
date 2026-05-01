@@ -25,13 +25,15 @@ def _sync(*, root: Path | None = None, check: bool = False) -> int:
 
     ``root`` is the directory the upward walk for ``pyproject.toml``
     begins from; the parent of the located ``pyproject.toml`` becomes
-    the project anchor used to resolve every project-relative input —
+    the project anchor used to resolve every project-relative *input* —
     source-root paths, instruction-file paths, and the rel-paths
     rendered into the namespace map and stubs. Defaults to the current
-    working directory at the CLI boundary. Threading ``root`` through
-    (rather than implicitly fetching cwd at each downstream call site)
-    keeps every working-directory dependency visible in the signature
-    and makes ``_sync`` testable against arbitrary trees.
+    working directory at the CLI boundary. Output paths still resolve
+    relative to cwd: ``DEFAULT_MAP_OUTPUT``, ``DEFAULT_STUBS_OUTPUT``,
+    the skill output paths, and the instruction-file write target are
+    all cwd-relative, so running from a subdirectory of the project
+    will land artefacts under that subdirectory rather than the
+    project root. Aligning writes with reads is a separate concern.
 
     When ``check=True``, the on-disk tree is not mutated: each step reports
     whether it would write. Returns 1 if any step reports a prospective
