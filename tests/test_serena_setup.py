@@ -174,7 +174,7 @@ class TestRepoDogfooding:
     this repo fails loudly instead of silently drifting.
     """
 
-    def test_repo_mcp_json_pins_same_serena_version(self):
+    def test_repo_mcp_json_matches_template_contract(self):
         mcp = json.loads((REPO_ROOT / ".mcp.json").read_text())
         args = mcp["mcpServers"]["serena"]["args"]
         assert args == EXPECTED_MCP_ARGS, (
