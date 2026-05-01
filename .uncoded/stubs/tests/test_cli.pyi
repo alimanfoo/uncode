@@ -1,5 +1,7 @@
 # tests/test_cli.py
 
+"""End-to-end tests for the uncoded CLI."""
+
 import os
 import sys
 import textwrap

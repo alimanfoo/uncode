@@ -1,5 +1,7 @@
 # src/uncoded/serena_setup.py
 
+"""Generate configuration files for Serena + ty LSP integration."""
+
 import json
 from pathlib import Path
 from typing import Literal

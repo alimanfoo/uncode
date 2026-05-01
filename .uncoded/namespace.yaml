@@ -92,6 +92,7 @@ src/:
         methods:
       StubModule:
         rel_path:
+        docstring_excerpt:
         imports:
         constants:
         classes:
@@ -259,6 +260,8 @@ tests/:
       test_class_no_bases:
       test_docstring_first_sentence_only:
       test_no_docstring:
+      test_module_docstring_extracted:
+      test_module_no_docstring:
       test_kwargs_and_varargs:
       test_imports_collected:
       test_syntax_error_raises:
@@ -282,6 +285,7 @@ tests/:
       test_async_function_prefix:
       test_function_with_annotations:
       test_docstring_excerpt_rendered:
+      test_module_docstring_rendered_at_top:
       test_class_with_bases:
       test_class_no_bases:
       test_attribute_with_annotation:
