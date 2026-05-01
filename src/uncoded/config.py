@@ -6,9 +6,9 @@ from pathlib import Path
 from uncoded.instruction_files import DEFAULT_INSTRUCTION_FILES
 
 
-def find_pyproject_toml() -> Path | None:
-    """Search for pyproject.toml starting from cwd, walking up."""
-    current = Path.cwd()
+def find_pyproject_toml(start: Path) -> Path | None:
+    """Walk up from ``start`` looking for ``pyproject.toml``."""
+    current = start.resolve()
     while True:
         candidate = current / "pyproject.toml"
         if candidate.exists():
@@ -19,22 +19,35 @@ def find_pyproject_toml() -> Path | None:
         current = parent
 
 
-def read_project_name() -> str:
-    """Read the project name from pyproject.toml, falling back to the cwd name."""
-    toml_path = find_pyproject_toml()
+def read_project_name(start: Path) -> str:
+    """Read the project name, falling back to the start-dir name.
+
+    ``start`` is the directory the upward walk for ``pyproject.toml``
+    begins from, and is also the source of the fallback name when no
+    ``pyproject.toml`` is found or its ``[project]`` table lacks a
+    ``name``. Threading ``start`` through both halves keeps the project
+    name aligned with the directory the caller is configuring; every
+    caller spells the directory explicitly so an implicit-cwd default
+    cannot drift the two halves apart.
+    """
+    base = start.resolve()
+    toml_path = find_pyproject_toml(base)
     if toml_path is None:
-        return Path.cwd().name
+        return base.name
     with toml_path.open("rb") as f:
         data = tomllib.load(f)
     try:
         return data["project"]["name"]
     except KeyError:
-        return Path.cwd().name
+        return base.name
 
 
-def read_source_roots() -> list[Path]:
-    """Read source roots from [tool.uncoded] source-roots in pyproject.toml."""
-    toml_path = find_pyproject_toml()
+def read_source_roots(start: Path) -> list[Path]:
+    """Read source roots from ``[tool.uncoded] source-roots`` in ``pyproject.toml``.
+
+    ``start`` is the directory the upward walk begins from.
+    """
+    toml_path = find_pyproject_toml(start)
     if toml_path is None:
         raise FileNotFoundError(
             "No pyproject.toml found. Add [tool.uncoded] source-roots to configure."
@@ -53,14 +66,15 @@ def read_source_roots() -> list[Path]:
     return [Path(r) for r in roots]
 
 
-def read_instruction_files() -> list[Path]:
-    """Read instruction files from [tool.uncoded] instruction-files in pyproject.toml.
+def read_instruction_files(start: Path) -> list[Path]:
+    """Read ``[tool.uncoded] instruction-files`` from ``pyproject.toml``.
 
-    Falls back to ``DEFAULT_INSTRUCTION_FILES`` if the key is absent or no
-    ``pyproject.toml`` is found, so that ``uncoded`` works on a fresh repo
-    without explicit configuration.
+    ``start`` is the directory the upward walk begins from. Falls back
+    to ``DEFAULT_INSTRUCTION_FILES`` if the key is absent or no
+    ``pyproject.toml`` is found, so that ``uncoded`` works on a fresh
+    repo without explicit configuration.
     """
-    toml_path = find_pyproject_toml()
+    toml_path = find_pyproject_toml(start)
     if toml_path is None:
         return list(DEFAULT_INSTRUCTION_FILES)
 

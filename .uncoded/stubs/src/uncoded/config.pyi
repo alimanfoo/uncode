@@ -6,18 +6,18 @@ import tomllib
 from pathlib import Path
 from uncoded.instruction_files import DEFAULT_INSTRUCTION_FILES
 
-def find_pyproject_toml() -> Path | None:
-    """Search for pyproject.toml starting from cwd, walking up."""
+def find_pyproject_toml(start: Path) -> Path | None:
+    """Walk up from ``start`` looking for ``pyproject.toml``."""
     ...
 
-def read_project_name() -> str:
-    """Read the project name from pyproject.toml, falling back to the cwd name."""
+def read_project_name(start: Path) -> str:
+    """Read the project name, falling back to the start-dir name."""
     ...
 
-def read_source_roots() -> list[Path]:
-    """Read source roots from [tool.uncoded] source-roots in pyproject.toml."""
+def read_source_roots(start: Path) -> list[Path]:
+    """Read source roots from ``[tool.uncoded] source-roots`` in ``pyproject.toml``."""
     ...
 
-def read_instruction_files() -> list[Path]:
-    """Read instruction files from [tool.uncoded] instruction-files in pyproject.toml."""
+def read_instruction_files(start: Path) -> list[Path]:
+    """Read ``[tool.uncoded] instruction-files`` from ``pyproject.toml``."""
     ...

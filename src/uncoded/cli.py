@@ -24,8 +24,9 @@ def _sync(*, check: bool = False) -> int:
     change (so CI can gate on a stale index), 0 if the tree is already in
     sync. In apply mode, returns 0 on success or 1 on configuration error.
     """
+    cwd = Path.cwd()
     try:
-        source_roots = [r.resolve() for r in read_source_roots()]
+        source_roots = [r.resolve() for r in read_source_roots(cwd)]
     except (FileNotFoundError, KeyError) as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -54,13 +55,13 @@ def _sync(*, check: bool = False) -> int:
     # user-facing line, falling back to the absolute resolved path when
     # the file lives outside cwd.
     seen_resolved: set[Path] = set()
-    for path in read_instruction_files():
+    for path in read_instruction_files(cwd):
         resolved = path.resolve()
         if resolved in seen_resolved:
             continue
         seen_resolved.add(resolved)
         try:
-            canonical = resolved.relative_to(Path.cwd())
+            canonical = resolved.relative_to(cwd)
         except ValueError:
             canonical = resolved
         if sync_instruction_file(canonical, check=check):
