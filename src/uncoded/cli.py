@@ -45,8 +45,24 @@ def _sync(*, check: bool = False) -> int:
     for root in source_roots:
         changes += build_stubs(root, check=check)
 
+    # Dedupe configured instruction paths by resolved inode. Without this,
+    # if CLAUDE.md is a symlink to AGENTS.md, pass 1 writes through the
+    # symlink and reports the alias name while pass 2 finds the file
+    # already in sync and reports nothing — asymmetric output that hides
+    # the actual write target. Resolving collapses both aliases to the
+    # same canonical path, which we then render relative to cwd for the
+    # user-facing line.
+    seen_inodes: set[Path] = set()
     for path in read_instruction_files():
-        if sync_instruction_file(path, check=check):
+        resolved = path.resolve()
+        if resolved in seen_inodes:
+            continue
+        seen_inodes.add(resolved)
+        try:
+            canonical = resolved.relative_to(Path.cwd())
+        except ValueError:
+            canonical = resolved
+        if sync_instruction_file(canonical, check=check):
             changes += 1
 
     if sync_skill(check=check):

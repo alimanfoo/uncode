@@ -19,6 +19,9 @@ class TestSyncApplyMode:
     def test_idempotent_second_run(self, tmp_path):
         ...
 
+    def test_dedupes_when_claude_md_is_symlink_to_agents_md(self, tmp_path, capsys):
+        ...
+
     def test_error_when_no_pyproject_toml(self, tmp_path, capsys):
         ...
 
