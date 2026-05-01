@@ -85,6 +85,10 @@ def _first_sentence(
     # appended ``" Z"`` sentinel acts as an end-of-text boundary so a
     # single-sentence docstring (no follow-on text) is matched in full
     # rather than falling through to the line-based fallback.
+    # Known limitation, not fixed by this heuristic: title+capital-name
+    # pairs like ``Mr. Smith arrived.`` or ``Dr. Jones examined.`` still
+    # truncate at the abbreviation, because the capital is genuinely
+    # there. Disambiguating those would need a tokeniser or a whitelist.
     match = re.match(r"(.+?\.)\s+[A-Z]", text + " Z")
     if match:
         return match.group(1)
