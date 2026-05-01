@@ -129,6 +129,7 @@ tests/:
       test_returns_one_when_source_changes_after_sync:
       test_returns_one_when_source_file_deleted:
       test_returns_one_when_instruction_file_drifts:
+      test_dedupes_when_claude_md_is_symlink_to_agents_md:
       test_error_still_returns_one:
     TestMainDispatch:
       test_sync_subcommand_runs_in_apply_mode:
@@ -140,14 +141,14 @@ tests/:
     _init_repo:
   test_config.py:
     TestFindPyprojectToml:
-      test_finds_in_cwd:
-      test_finds_in_parent:
+      test_finds_at_start:
+      test_finds_in_parent_of_start:
       test_returns_none_if_not_found:
     TestReadProjectName:
       test_reads_name_from_pyproject_toml:
-      test_falls_back_to_cwd_name_when_no_pyproject:
-      test_falls_back_to_cwd_name_when_no_project_section:
-      test_falls_back_to_cwd_name_when_name_missing:
+      test_falls_back_to_start_name_when_no_pyproject:
+      test_falls_back_to_start_name_when_no_project_section:
+      test_falls_back_to_start_name_when_name_missing:
     TestReadSourceRoots:
       test_reads_source_roots:
       test_raises_if_no_pyproject_toml:
@@ -230,7 +231,7 @@ tests/:
       test_merges_into_existing_claude_settings:
       test_does_not_overwrite_existing_serena_project_yml:
       test_does_not_duplicate_on_second_merge:
-      test_setup_uses_cwd_name_when_no_pyproject:
+      test_setup_uses_root_name_when_no_pyproject:
       test_setup_reads_name_from_pyproject:
     TestRepoDogfooding:
       test_repo_mcp_json_matches_template_contract:
@@ -259,6 +260,9 @@ tests/:
       test_class_with_bases:
       test_class_no_bases:
       test_docstring_first_sentence_only:
+      test_docstring_starting_with_eg_not_truncated:
+      test_docstring_starting_with_ie_not_truncated:
+      test_docstring_starting_with_us_initialism_not_truncated:
       test_no_docstring:
       test_module_docstring_extracted:
       test_module_no_docstring:

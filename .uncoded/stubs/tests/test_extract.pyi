@@ -58,5 +58,5 @@ class TestWalkSource:
     def test_skips_empty_init(self, tmp_path):
         ...
 
-    def test_skips_syntax_errors(self, tmp_path):
+    def test_skips_syntax_errors(self, tmp_path, capsys):
         ...

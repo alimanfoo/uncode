@@ -200,7 +200,7 @@ def setup(root: Path | None = None) -> int:
     """
     if root is None:
         root = Path.cwd()
-    project_name = read_project_name()
+    project_name = read_project_name(start=root)
 
     mcp_path = root / ".mcp.json"
     serena_path = root / ".serena" / "project.yml"

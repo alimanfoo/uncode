@@ -272,7 +272,7 @@ class TestWalkSource:
         rel_paths = [m.rel_path for m in modules]
         assert not any("__init__.py" in p for p in rel_paths)
 
-    def test_skips_syntax_errors(self, tmp_path):
+    def test_skips_syntax_errors(self, tmp_path, capsys):
         src = tmp_path / "src"
         pkg = src / "mypackage"
         pkg.mkdir(parents=True)
@@ -285,3 +285,11 @@ class TestWalkSource:
         rel_paths = [m.rel_path for m in modules]
         assert "src/mypackage/good.py" in rel_paths
         assert any("bad.py" in p for p in rel_paths) is False
+
+        # Skipping must be visible — a silent skip means a stale stub
+        # for the offending file would never get refreshed and the user
+        # would have no breadcrumb to investigate. The warning names the
+        # file so they can find it.
+        err = capsys.readouterr().err
+        assert "warning: skipping src/mypackage/bad.py" in err
+        assert "SyntaxError" in err
