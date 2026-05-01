@@ -337,10 +337,10 @@ def render_stub(module: StubModule) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _generate_stubs(source_root: Path) -> dict[Path, str]:
+def _generate_stubs(source_root: Path, base: Path | None = None) -> dict[Path, str]:
     """Return a mapping from stub relative paths to rendered stub content."""
     result: dict[Path, str] = {}
-    for source, rel_path in iter_source_files(source_root):
+    for source, rel_path in iter_source_files(source_root, base):
         module = extract_stub(source, rel_path)
         if not module.classes and not module.functions and not module.constants:
             continue
@@ -354,6 +354,7 @@ DEFAULT_STUBS_OUTPUT = Path(".uncoded/stubs")
 def build_stubs(
     source_root: Path,
     output_dir: Path = DEFAULT_STUBS_OUTPUT,
+    base: Path | None = None,
     *,
     check: bool = False,
 ) -> int:
@@ -366,23 +367,33 @@ def build_stubs(
     subtree corresponding to ``source_root`` is touched, so other source
     roots' stubs are not affected.
 
+    Stub paths are rendered relative to *base* (defaulting to cwd), so the
+    rendered ``rel_path`` headers match the project-relative paths that
+    :func:`walk_source` and the namespace map use. The orphan-cleanup pass
+    walks the subtree of ``output_dir`` corresponding to
+    ``source_root.relative_to(base)``, so ``base`` must be an ancestor of
+    ``source_root`` for cleanup to run; otherwise cleanup is skipped.
+
     When ``check=True``, the on-disk tree is not mutated; instead, prospective
     writes and removals are reported and counted. Returns the number of
     changes (or prospective changes).
     """
+    if base is None:
+        base = Path.cwd()
+    base = base.resolve()
+
     changes = 0
     expected: set[Path] = set()
-    for rel_stub_path, content in _generate_stubs(source_root).items():
+    for rel_stub_path, content in _generate_stubs(source_root, base).items():
         stub_path = output_dir / rel_stub_path
         if sync_file(stub_path, content, check=check):
             changes += 1
         expected.add(stub_path.resolve())
 
-    base = Path.cwd().resolve()
     try:
         source_rel = source_root.resolve().relative_to(base)
     except ValueError:
-        # source_root is outside cwd; we have no safe subtree to clean.
+        # source_root is outside base; we have no safe subtree to clean.
         return changes
     stubs_root = output_dir / source_rel
     if not stubs_root.exists():

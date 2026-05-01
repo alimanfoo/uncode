@@ -64,11 +64,11 @@ def render_stub(module: StubModule) -> str:
     """Render a StubModule as a .pyi file string."""
     ...
 
-def _generate_stubs(source_root: Path) -> dict[Path, str]:
+def _generate_stubs(source_root: Path, base: Path | None) -> dict[Path, str]:
     """Return a mapping from stub relative paths to rendered stub content."""
     ...
 
-def build_stubs(source_root: Path, output_dir: Path, *, check: bool) -> int:
+def build_stubs(source_root: Path, output_dir: Path, base: Path | None, *, check: bool) -> int:
     """Sync stub files for all symbols under source_root, removing any orphans."""
     ...
 

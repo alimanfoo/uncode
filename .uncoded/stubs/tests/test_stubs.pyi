@@ -1,6 +1,5 @@
 # tests/test_stubs.py
 
-import os
 import textwrap
 import pytest
 from uncoded.stubs import StubAssignment, StubClass, StubFunction, StubModule, StubParam, build_stubs, extract_stub, render_stub
