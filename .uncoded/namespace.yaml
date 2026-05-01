@@ -35,6 +35,7 @@ src/:
       _assign_target_name:
       extract_module:
       iter_source_files:
+      extract_modules:
       walk_source:
     instruction_files.py:
       MARKER_START:
@@ -111,6 +112,7 @@ src/:
       _render_assignment:
       render_stub:
       _generate_stubs:
+      _write_stubs:
       build_stubs:
     sync.py:
       sync_file:

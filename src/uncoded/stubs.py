@@ -338,14 +338,14 @@ def render_stub(module: StubModule) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _generate_stubs(
-    source_root: Path,
-    base: Path | None = None,
-    files: Iterable[tuple[str, str]] | None = None,
-) -> dict[Path, str]:
-    """Return a mapping from stub relative paths to rendered stub content."""
-    if files is None:
-        files = iter_source_files(source_root, base)
+def _generate_stubs(files: Iterable[tuple[str, str]]) -> dict[Path, str]:
+    """Return a mapping from stub relative paths to rendered stub content.
+
+    *files* is the output of :func:`iter_source_files` — an iterable of
+    ``(source, rel_path)`` pairs. Pure transformation: no IO, no
+    warnings, no parsing decisions. Modules with no symbols are
+    skipped.
+    """
     result: dict[Path, str] = {}
     for source, rel_path in files:
         module = extract_stub(source, rel_path)
@@ -358,51 +358,38 @@ def _generate_stubs(
 DEFAULT_STUBS_OUTPUT = Path(".uncoded/stubs")
 
 
-def build_stubs(
+def _write_stubs(
+    stubs: dict[Path, str],
     source_root: Path,
-    output_dir: Path = DEFAULT_STUBS_OUTPUT,
-    base: Path | None = None,
+    output_dir: Path,
+    base: Path,
     *,
-    files: Iterable[tuple[str, str]] | None = None,
-    check: bool = False,
+    check: bool,
 ) -> int:
-    """Sync stub files for all symbols under source_root, removing any orphans.
+    """Write *stubs* under *output_dir* and prune orphans under *source_root*.
 
-    Writes only files whose content has changed. After reconciling the current
-    set of stubs, any pre-existing ``.pyi`` files in the corresponding subtree
-    of ``output_dir`` whose source has been removed or renamed are deleted,
-    and any directories left empty by the deletion are pruned. Only the
-    subtree corresponding to ``source_root`` is touched, so other source
-    roots' stubs are not affected.
+    *stubs* maps each stub's relative path (under *output_dir*) to its
+    rendered content; typically the return value of
+    :func:`_generate_stubs`. *base* must already be resolved — it
+    anchors the orphan-cleanup subtree at
+    ``output_dir / source_root.relative_to(base)``, so ``base`` must
+    be an ancestor of ``source_root`` for cleanup to run; otherwise
+    cleanup is skipped.
 
-    Stub paths are rendered relative to *base* (defaulting to cwd), so the
-    rendered ``rel_path`` headers match the project-relative paths that
-    :func:`walk_source` and the namespace map use. The orphan-cleanup pass
-    walks the subtree of ``output_dir`` corresponding to
-    ``source_root.relative_to(base)``, so ``base`` must be an ancestor of
-    ``source_root`` for cleanup to run; otherwise cleanup is skipped.
+    Writes only files whose content has changed. After reconciling the
+    current set of stubs, any pre-existing ``.pyi`` files in the
+    corresponding subtree whose source has been removed or renamed are
+    deleted, and any directories left empty by the deletion are
+    pruned. Only the subtree corresponding to ``source_root`` is
+    touched, so other source roots' stubs are not affected.
 
-    When *files* is provided, stub generation consumes the iterable directly
-    (expected to be the output of :func:`iter_source_files`) instead of
-    re-scanning ``source_root``. This lets a caller drive a single
-    ``iter_source_files`` pass and feed both the namespace-map and the stub
-    pipelines from one read, so a syntax-erroring file is read, parsed, and
-    warned about exactly once per ``uncoded sync`` invocation. The orphan
-    cleanup still runs against ``source_root`` regardless.
-
-    When ``check=True``, the on-disk tree is not mutated; instead, prospective
-    writes and removals are reported and counted. Returns the number of
-    changes (or prospective changes).
+    When ``check=True``, the on-disk tree is not mutated; instead,
+    prospective writes and removals are reported and counted. Returns
+    the number of changes (or prospective changes).
     """
-    if base is None:
-        base = Path.cwd()
-    base = base.resolve()
-
     changes = 0
     expected: set[Path] = set()
-    for rel_stub_path, content in _generate_stubs(
-        source_root, base, files=files
-    ).items():
+    for rel_stub_path, content in stubs.items():
         stub_path = output_dir / rel_stub_path
         if sync_file(stub_path, content, check=check):
             changes += 1
@@ -430,3 +417,29 @@ def build_stubs(
             d.rmdir()
 
     return changes
+
+
+def build_stubs(
+    source_root: Path,
+    output_dir: Path = DEFAULT_STUBS_OUTPUT,
+    base: Path | None = None,
+    *,
+    check: bool = False,
+) -> int:
+    """Sync stub files for all symbols under source_root, removing any orphans.
+
+    Convenience wrapper around :func:`iter_source_files`,
+    :func:`_generate_stubs`, and :func:`_write_stubs`. Stub paths are
+    rendered relative to *base* (defaulting to cwd), so the rendered
+    ``rel_path`` headers match the project-relative paths that
+    :func:`walk_source` and the namespace map use.
+
+    When ``check=True``, the on-disk tree is not mutated; instead,
+    prospective writes and removals are reported and counted. Returns
+    the number of changes (or prospective changes).
+    """
+    if base is None:
+        base = Path.cwd()
+    base = base.resolve()
+    stubs = _generate_stubs(iter_source_files(source_root, base))
+    return _write_stubs(stubs, source_root, output_dir, base, check=check)
