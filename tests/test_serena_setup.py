@@ -23,6 +23,7 @@ EXPECTED_EXCLUDED_TOOLS = {
     "edit_memory",
     "delete_memory",
     "rename_memory",
+    "activate_project",
     "onboarding",
     "check_onboarding_performed",
     "open_dashboard",
