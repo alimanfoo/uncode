@@ -7,16 +7,24 @@ automatically:
 * ``.mcp.json`` — registers the Serena MCP server so Claude Code launches
   it via ``uvx`` on session start, with the web dashboard disabled.
 * ``.serena/project.yml`` — selects ty over Serena's default backend
-  (pyright), keeps Serena out of uncoded's generated stubs, and narrows
-  Serena's surface to pure LSP operations: memory, onboarding,
-  dashboard, and shell-exec tools are all excluded. uncoded's namespace
-  map and stubs already give agents a project-wide view, so Serena's
-  memory-based project understanding is redundant and noisy alongside
-  it.
+  (pyright), keeps Serena out of uncoded's generated stubs, and drops
+  the noisier tool surfaces (memory, onboarding, dashboard, shell-exec)
+  that uncoded's index already covers or that have no role in our
+  workflow. uncoded's namespace map and stubs already give agents a
+  project-wide view, so Serena's memory-based project understanding is
+  redundant and noisy alongside it.
 * ``.claude/settings.json`` — enables the Serena server and allowlists
   the nine tools (``initial_instructions`` plus the eight LSP tools —
   symbol lookup, reference search, and the edit family) so they run
-  without a prompt.
+  without a prompt. This is the file that finally narrows Serena's
+  active surface to pure LSP operations; the YAML's exclusions remove
+  the worst offenders, and the allowlist completes the narrowing.
+
+The exclusions in :data:`SERENA_PROJECT_FIELDS` defend in depth alongside
+the prose ``Skip activate_project and check_onboarding_performed`` line
+in ``instruction_files._SECTION_BODY``: the prose tells the agent not to
+call those tools, and the project config drops them from Serena's
+exposed surface so the call cannot land even if the prose is missed.
 
 JSON files merge into existing content: pre-existing non-Serena MCP
 servers and permissions are preserved, while the Serena entry itself
