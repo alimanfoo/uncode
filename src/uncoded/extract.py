@@ -1,6 +1,7 @@
 """Extract symbols from Python source files using the AST."""
 
 import ast
+import sys
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -100,9 +101,13 @@ def extract_module(source: str, rel_path: str) -> ModuleInfo:
 def iter_source_files(
     source_root: Path, base: Path | None = None
 ) -> Iterator[tuple[str, str]]:
-    """Yield (source_text, rel_path) for every Python file under *source_root*.
+    """Yield (source_text, rel_path) for every parseable Python file in *source_root*.
 
-    Paths are relative to *base* (defaults to cwd).
+    Paths are relative to *base* (defaults to cwd). Files that fail to
+    parse are skipped with a single ``warning: skipping ...`` line on
+    stderr — centralising the syntax-error decision here lets downstream
+    consumers (``walk_source``, ``_generate_stubs``) trust they only
+    receive parseable source.
     """
     if base is None:
         base = Path.cwd()
@@ -112,7 +117,17 @@ def iter_source_files(
 
     for py_file in sorted(source_root.rglob("*.py")):
         rel_path = str(py_file.relative_to(base))
-        yield py_file.read_text(), rel_path
+        source = py_file.read_text()
+        try:
+            ast.parse(source, rel_path)
+        except SyntaxError as e:
+            print(
+                f"warning: skipping {rel_path}: "
+                f"SyntaxError at line {e.lineno}: {e.msg}",
+                file=sys.stderr,
+            )
+            continue
+        yield source, rel_path
 
 
 def walk_source(source_root: Path, base: Path | None = None) -> list[ModuleInfo]:
@@ -121,16 +136,14 @@ def walk_source(source_root: Path, base: Path | None = None) -> list[ModuleInfo]
     Paths in the returned ModuleInfo are relative to *base* (defaults to
     cwd), so they can be used directly to open files from the repo root.
 
-    Skips files with no symbols and files with syntax errors.
+    Skips files with no symbols. Files with syntax errors are filtered
+    out upstream by ``iter_source_files`` (which emits a stderr warning
+    naming the offending file).
     """
     modules: list[ModuleInfo] = []
 
     for source, rel_path in iter_source_files(source_root, base):
-        try:
-            module = extract_module(source, rel_path)
-        except SyntaxError:
-            continue
-
+        module = extract_module(source, rel_path)
         if module.classes or module.functions or module.constants:
             modules.append(module)
 

@@ -3,6 +3,7 @@
 """Extract symbols from Python source files using the AST."""
 
 import ast
+import sys
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -20,7 +21,7 @@ def extract_module(source: str, rel_path: str) -> ModuleInfo:
     ...
 
 def iter_source_files(source_root: Path, base: Path | None) -> Iterator[tuple[str, str]]:
-    """Yield (source_text, rel_path) for every Python file under *source_root*."""
+    """Yield (source_text, rel_path) for every parseable Python file in *source_root*."""
     ...
 
 def walk_source(source_root: Path, base: Path | None) -> list[ModuleInfo]:

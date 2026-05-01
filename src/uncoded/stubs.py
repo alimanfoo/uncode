@@ -337,10 +337,7 @@ def _generate_stubs(source_root: Path) -> dict[Path, str]:
     """Return a mapping from stub relative paths to rendered stub content."""
     result: dict[Path, str] = {}
     for source, rel_path in iter_source_files(source_root):
-        try:
-            module = extract_stub(source, rel_path)
-        except SyntaxError:
-            continue
+        module = extract_stub(source, rel_path)
         if not module.classes and not module.functions and not module.constants:
             continue
         result[Path(rel_path).with_suffix(".pyi")] = render_stub(module)
