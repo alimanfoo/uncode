@@ -2,52 +2,51 @@
 
 """End-to-end tests for the uncoded CLI."""
 
-import os
 import sys
 import textwrap
 import pytest
 from uncoded import cli
 from uncoded.skill import SKILL_OUTPUTS
 
-def _init_repo(tmp_path, source_roots):
+def _init_repo(tmp_path, monkeypatch, source_roots):
     """Set up a minimal repo: pyproject.toml + source root + chdir."""
     ...
 
 class TestSyncApplyMode:
 
-    def test_writes_namespace_map_stubs_and_instruction_file(self, tmp_path):
+    def test_writes_namespace_map_stubs_and_instruction_file(self, tmp_path, monkeypatch):
         ...
 
-    def test_idempotent_second_run(self, tmp_path):
+    def test_idempotent_second_run(self, tmp_path, monkeypatch):
         ...
 
-    def test_dedupes_when_claude_md_is_symlink_to_agents_md(self, tmp_path, capsys):
+    def test_dedupes_when_claude_md_is_symlink_to_agents_md(self, tmp_path, monkeypatch, capsys):
         ...
 
-    def test_error_when_no_pyproject_toml(self, tmp_path, capsys):
+    def test_error_when_no_pyproject_toml(self, tmp_path, monkeypatch, capsys):
         ...
 
-    def test_error_when_source_root_missing(self, tmp_path, capsys):
+    def test_error_when_source_root_missing(self, tmp_path, monkeypatch, capsys):
         ...
 
 class TestSyncCheckMode:
 
-    def test_returns_one_and_does_not_write_on_empty_repo(self, tmp_path):
+    def test_returns_one_and_does_not_write_on_empty_repo(self, tmp_path, monkeypatch):
         ...
 
-    def test_returns_zero_when_index_is_up_to_date(self, tmp_path):
+    def test_returns_zero_when_index_is_up_to_date(self, tmp_path, monkeypatch):
         ...
 
-    def test_returns_one_when_source_changes_after_sync(self, tmp_path):
+    def test_returns_one_when_source_changes_after_sync(self, tmp_path, monkeypatch):
         ...
 
-    def test_returns_one_when_source_file_deleted(self, tmp_path):
+    def test_returns_one_when_source_file_deleted(self, tmp_path, monkeypatch):
         ...
 
-    def test_returns_one_when_instruction_file_drifts(self, tmp_path):
+    def test_returns_one_when_instruction_file_drifts(self, tmp_path, monkeypatch):
         ...
 
-    def test_error_still_returns_one(self, tmp_path, capsys):
+    def test_error_still_returns_one(self, tmp_path, monkeypatch, capsys):
         ...
 
 class TestMainDispatch:
