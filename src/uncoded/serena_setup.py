@@ -27,8 +27,15 @@ to avoid clobbering hand-edited Serena config.
 
 import json
 from pathlib import Path
+from typing import Literal
 
 from uncoded.config import read_project_name
+
+# Closed set of one-word statuses returned by the three sync helpers and
+# rendered through ``_STATUS_VERB`` by ``setup()``. Typed as a literal
+# union so a typo in a helper's return value is a ty error rather than a
+# runtime ``KeyError`` when ``setup()`` formats the per-file line.
+type _Status = Literal["wrote", "updated", "unchanged"]
 
 # Pin the Serena version so every repo that runs `uncoded setup` gets
 # the same, tested integration. On bump, re-run `uncoded setup` to
@@ -84,14 +91,14 @@ SERENA_ALLOWED_TOOLS = [
     "mcp__serena__replace_symbol_body",
 ]
 
-_STATUS_VERB = {
+_STATUS_VERB: dict[_Status, str] = {
     "wrote": "Wrote",
     "updated": "Updated",
     "unchanged": "Unchanged",
 }
 
 
-def _sync_mcp_json(path: Path) -> str:
+def _sync_mcp_json(path: Path) -> _Status:
     """Write or merge Serena into ``.mcp.json``.
 
     Non-Serena MCP servers already in the file are preserved. The
@@ -118,7 +125,7 @@ def _sync_mcp_json(path: Path) -> str:
     return status
 
 
-def _write_serena_project_if_absent(path: Path, project_name: str) -> str:
+def _write_serena_project_if_absent(path: Path, project_name: str) -> _Status:
     """Write ``.serena/project.yml`` if absent.
 
     Returns ``wrote`` or ``unchanged``. An existing file is never touched:
@@ -132,7 +139,7 @@ def _write_serena_project_if_absent(path: Path, project_name: str) -> str:
     return "wrote"
 
 
-def _sync_claude_settings(path: Path) -> str:
+def _sync_claude_settings(path: Path) -> _Status:
     """Write or merge Serena allowlist into ``.claude/settings.json``.
 
     Returns ``wrote``, ``updated``, or ``unchanged``.

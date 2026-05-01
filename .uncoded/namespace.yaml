@@ -52,6 +52,7 @@ src/:
       build_map:
       render_map:
     serena_setup.py:
+      _Status:
       SERENA_VERSION:
       MCP_SERVER_SERENA:
       SERENA_PROJECT_YML:
