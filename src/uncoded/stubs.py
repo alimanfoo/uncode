@@ -78,22 +78,22 @@ def _first_sentence(
     docstring = ast.get_docstring(node)
     if not docstring:
         return None
-    text = docstring.strip()
-    # Sentence boundary: ``.`` followed by whitespace and a capital letter.
-    # The capital-letter requirement prevents truncation at common
-    # abbreviations whose period is followed by lowercase continuation
-    # (``e.g. parse...``, ``i.e. ...``, ``U.S. economic policy``). The
-    # appended ``" Z"`` sentinel acts as an end-of-text boundary so a
-    # single-sentence docstring (no follow-on text) is matched in full
-    # rather than falling through to the line-based fallback.
-    # Known limitation, not fixed by this heuristic: title+capital-name
-    # pairs like ``Mr. Smith arrived.`` or ``Dr. Jones examined.`` still
-    # truncate at the abbreviation, because the capital is genuinely
-    # there. Disambiguating those would need a tokeniser or a whitelist.
-    match = re.match(r"(.+?\.)\s+[A-Z]", text + " Z")
-    if match:
-        return match.group(1)
-    return text.split("\n")[0].strip()
+    # Sentence boundary: ``.`` followed by whitespace and a capital
+    # letter. The capital-letter requirement prevents truncation at
+    # common abbreviations whose period is followed by lowercase
+    # continuation (``e.g. parse...``, ``i.e. ...``, ``U.S. economic
+    # policy``). When no period+space+capital boundary exists in the
+    # text — single-sentence, period-less, or multi-line docstrings —
+    # the second alternative returns the text up to the first newline
+    # (we append a trailing ``\n`` to guarantee one). Known limitation:
+    # title plus capital-name pairs like ``Mr. Smith arrived.`` or
+    # ``Dr. Jones examined.`` still truncate at the abbreviation,
+    # because the capital is genuinely there. Disambiguating those
+    # would need a tokeniser or a whitelist.
+    match = re.match(r"(.+?\.(?=\s+[A-Z])|.+?(?=\n))", docstring.strip() + "\n")
+    if match is None:
+        return None
+    return match.group(1)
 
 
 def _extract_params(args: ast.arguments) -> list[StubParam]:
