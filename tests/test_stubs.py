@@ -157,11 +157,6 @@ class TestExtractStub:
         assert module.functions[0].docstring_excerpt is None
 
     def test_whitespace_only_docstring_yields_none(self):
-        # A whitespace-only docstring is observably a docstring at the
-        # AST level but carries no content. ``ast.get_docstring`` with
-        # the default ``clean=True`` cleans it to an empty string, which
-        # ``_first_sentence`` short-circuits as ``None`` rather than
-        # returning an empty excerpt.
         source = textwrap.dedent("""\
             def whitespace_only():
                 '''   '''
@@ -715,8 +710,6 @@ class TestBuildStubsCheckMode:
 
 
 class TestWriteStubs:
-    """The IO half: writes stubs from a generated dict, prunes orphans."""
-
     def test_writes_stubs(self, tmp_path):
         src = tmp_path / "src"
         src.mkdir()
@@ -729,8 +722,6 @@ class TestWriteStubs:
         assert (out / "src" / "foo.pyi").read_text() == "# stub\n"
 
     def test_check_mode_does_not_write(self, tmp_path):
-        # Symmetric with ``sync_file``'s check-mode contract: report what
-        # would change, mutate nothing.
         src = tmp_path / "src"
         src.mkdir()
         out = tmp_path / "stubs"
@@ -742,12 +733,6 @@ class TestWriteStubs:
         assert not (out / "src" / "foo.pyi").exists()
 
     def test_prunes_orphan_stubs(self, tmp_path):
-        # Pre-existing stub under a subpackage of the source-root
-        # subtree whose source has been removed (modelled here by an
-        # empty stubs dict) should be deleted, and child directories
-        # left empty by the deletion should be pruned. The
-        # source-root stub directory itself is preserved — that's
-        # ``_write_stubs``'s "keep stubs_root itself" contract.
         src = tmp_path / "src"
         src.mkdir()
         out = tmp_path / "stubs"
@@ -758,5 +743,5 @@ class TestWriteStubs:
 
         assert changes == 1
         assert not (out / "src" / "pkg" / "orphan.pyi").exists()
-        assert not (out / "src" / "pkg").exists()  # empty subpackage pruned
-        assert (out / "src").exists()  # source-root stub dir preserved
+        assert not (out / "src" / "pkg").exists()
+        assert (out / "src").exists()

@@ -208,7 +208,6 @@ class TestBuildStubsCheckMode:
         ...
 
 class TestWriteStubs:
-    """The IO half: writes stubs from a generated dict, prunes orphans."""
 
     def test_writes_stubs(self, tmp_path):
         ...

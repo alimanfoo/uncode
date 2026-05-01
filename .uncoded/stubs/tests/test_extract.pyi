@@ -62,7 +62,6 @@ class TestWalkSource:
         ...
 
 class TestExtractModules:
-    """Pure transformation: ``(source, rel_path)`` pairs to ``ModuleInfo``."""
 
     def test_returns_module_info_per_parseable_file(self):
         ...

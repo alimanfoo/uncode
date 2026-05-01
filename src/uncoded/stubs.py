@@ -78,18 +78,12 @@ def _first_sentence(
     docstring = ast.get_docstring(node)
     if not docstring:
         return None
-    # Sentence boundary: ``.`` followed by whitespace and a capital
-    # letter. The capital-letter requirement prevents truncation at
-    # common abbreviations whose period is followed by lowercase
-    # continuation (``e.g. parse...``, ``i.e. ...``, ``U.S. economic
-    # policy``). When no period+space+capital boundary exists in the
-    # text — single-sentence, period-less, or multi-line docstrings —
-    # the second alternative returns the text up to the first newline
-    # (we append a trailing ``\n`` to guarantee one). Known limitation:
-    # title plus capital-name pairs like ``Mr. Smith arrived.`` or
-    # ``Dr. Jones examined.`` still truncate at the abbreviation,
-    # because the capital is genuinely there. Disambiguating those
-    # would need a tokeniser or a whitelist.
+    # Sentence boundary: ``.`` followed by whitespace and a capital.
+    # The capital-letter requirement avoids truncation at lowercase-
+    # after-period abbreviations like ``e.g.``, ``i.e.``, ``U.S.``.
+    # Known limitation: ``Mr. Smith arrived.`` still truncates at the
+    # abbreviation, because the capital is genuinely there.
+    # Disambiguating those would need a tokeniser or a whitelist.
     match = re.match(r"(.+?\.(?=\s+[A-Z])|.+?(?=\n))", docstring.strip() + "\n")
     if match is None:
         return None

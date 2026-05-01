@@ -33,7 +33,7 @@ def _sync(*, root: Path | None = None, check: bool = False) -> int:
     the skill output paths, and the instruction-file write target are
     all cwd-relative, so running from a subdirectory of the project
     will land artefacts under that subdirectory rather than the
-    project root. Aligning writes with reads is a separate concern.
+    project root.
 
     When ``check=True``, the on-disk tree is not mutated: each step reports
     whether it would write. Returns 1 if any step reports a prospective
@@ -68,12 +68,6 @@ def _sync(*, root: Path | None = None, check: bool = False) -> int:
 
     changes = 0
 
-    # Drive a single ``iter_source_files`` pass per source root and feed
-    # both the namespace map and the stubs pipeline from that one read.
-    # Without this, each pipeline runs ``iter_source_files`` separately
-    # and a syntax-erroring file produces two identical ``warning:
-    # skipping`` lines per ``uncoded sync`` invocation — the contract
-    # is one warning per broken file per sync.
     roots_with_files = [
         (src_root, list(iter_source_files(src_root, base=project_root)))
         for src_root in source_roots
@@ -98,9 +92,8 @@ def _sync(*, root: Path | None = None, check: bool = False) -> int:
     # the file already in sync and reports nothing — asymmetric output
     # that hides the actual write target. Resolving collapses both aliases
     # to the same canonical path, which we render relative to
-    # ``project_root`` for the user-facing line (matching how source-root
-    # paths resolve), falling back to the absolute resolved path when
-    # the file lives outside ``project_root``.
+    # ``project_root`` for the user-facing line, falling back to the
+    # absolute resolved path when the file lives outside ``project_root``.
     seen_resolved: set[Path] = set()
     for path in read_instruction_files(project_root):
         resolved = (project_root / path).resolve()

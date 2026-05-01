@@ -296,8 +296,6 @@ class TestWalkSource:
 
 
 class TestExtractModules:
-    """Pure transformation: ``(source, rel_path)`` pairs to ``ModuleInfo``."""
-
     def test_returns_module_info_per_parseable_file(self):
         files = [
             ("def foo(): pass\n", "src/a.py"),
@@ -311,9 +309,6 @@ class TestExtractModules:
         assert modules[1].classes[0].name == "Bar"
 
     def test_preserves_source_order(self):
-        # Order is the caller's contract — ``iter_source_files`` produces
-        # sorted output, and ``extract_modules`` must preserve it so the
-        # rendered namespace map is reproducible.
         files = [
             ("def a(): pass\n", "src/a.py"),
             ("def b(): pass\n", "src/b.py"),
@@ -325,9 +320,6 @@ class TestExtractModules:
         assert [m.rel_path for m in modules] == ["src/a.py", "src/b.py", "src/c.py"]
 
     def test_skips_files_with_no_symbols(self):
-        # A comment-only file produces a ``ModuleInfo`` with no classes,
-        # functions, or constants — those are filtered out so the
-        # namespace map doesn't carry empty-leaf entries.
         files = [
             ("def foo(): pass\n", "src/a.py"),
             ("# nothing here\n", "src/empty.py"),

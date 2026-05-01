@@ -137,12 +137,6 @@ def extract_modules(files: Iterable[tuple[str, str]]) -> list[ModuleInfo]:
     ``(source, rel_path)`` pairs where the source has already been
     confirmed parseable. Pure transformation: no IO, no warnings, no
     parsing decisions. Skips files with no symbols.
-
-    This is the layer ``cli._sync`` calls directly when it has driven a
-    single ``iter_source_files`` pass per source root and wants to feed
-    both the namespace map and the stubs pipeline from that pass without
-    a second walk. The :func:`walk_source` wrapper combines the two
-    steps for callers that want the one-shot convenience.
     """
     modules: list[ModuleInfo] = []
     for source, rel_path in files:
