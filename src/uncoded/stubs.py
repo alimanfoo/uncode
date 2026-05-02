@@ -409,17 +409,7 @@ def _write_stubs(
     for existing in abs_stubs_root.rglob("*.pyi"):
         if existing.resolve() in expected:
             continue
-        # Display path stays project-relative when we have a root anchor;
-        # falls back to the absolute path for files that somehow live
-        # outside it (which shouldn't happen given abs_stubs_root sits
-        # under root, but the fallback keeps display sensible either way).
-        if root is not None:
-            try:
-                display = existing.relative_to(root)
-            except ValueError:
-                display = existing
-        else:
-            display = existing
+        display = existing.relative_to(root) if root is not None else existing
         if remove_file(display, root=root, check=check):
             changes += 1
 
