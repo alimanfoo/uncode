@@ -8,6 +8,7 @@ contract.
 
 import sys
 import textwrap
+from pathlib import Path
 
 import pytest
 
@@ -123,6 +124,25 @@ class TestSyncApplyMode:
         assert cli._sync() == 1
         assert "Error" in capsys.readouterr().err
 
+    def test_error_when_uncoded_section_missing(self, tmp_path, monkeypatch, capsys):
+        # User has pyproject.toml but no [tool.uncoded] section. The
+        # message must (a) not surface the KeyError quoting artefact —
+        # historically `Error: 'No ...'` with literal single quotes —
+        # and (b) include the same recovery hint as the missing-toml
+        # case, since this is the more common configuration error.
+        (tmp_path / "pyproject.toml").write_text("[tool.ruff]\n")
+        monkeypatch.chdir(tmp_path)
+
+        assert cli._sync() == 1
+
+        err = capsys.readouterr().err
+        assert (
+            "Error: No [tool.uncoded] source-roots found in pyproject.toml. "
+            "Add [tool.uncoded] source-roots to configure." in err
+        )
+        # No literal single-quote wrapping from KeyError.__str__.
+        assert "Error: 'No" not in err
+
     def test_skip_warning_emitted_once_per_broken_file(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -142,9 +162,13 @@ class TestSyncApplyMode:
         assert "SyntaxError" in skip_warnings[0]
         assert (tmp_path / ".uncoded" / "stubs" / "src" / "good.pyi").exists()
 
-    def test_root_param_anchors_reads_at_project_root_when_cwd_is_subdir(
+    def test_anchors_reads_and_writes_at_project_root_when_cwd_is_subdir(
         self, tmp_path, monkeypatch
     ):
+        # Running from a subdirectory of the project must produce
+        # artefacts at the project root, not under the subdirectory.
+        # Reads (source files, pyproject) anchor at project_root; writes
+        # (namespace, stubs, instruction file, skill files) do too.
         (tmp_path / "pyproject.toml").write_text(
             textwrap.dedent(
                 """\
@@ -162,11 +186,69 @@ class TestSyncApplyMode:
 
         assert cli._sync(root=tmp_path) == 0
 
-        namespace_path = tmp_path / "src" / ".uncoded" / "namespace.yaml"
+        # Reads anchored: namespace map references the project-relative
+        # source path, not a subdir-relative one.
+        namespace_path = tmp_path / ".uncoded" / "namespace.yaml"
         assert namespace_path.exists()
         content = namespace_path.read_text()
         assert "src/:" in content
         assert "foo.py:" in content
+
+        # Writes anchored: every artefact lands at project_root, never
+        # under the subdirectory cwd.
+        assert (tmp_path / ".uncoded" / "stubs" / "src" / "foo.pyi").exists()
+        assert (tmp_path / "CLAUDE.md").exists()
+        for skill_path in SKILL_OUTPUTS:
+            assert (tmp_path / skill_path).exists()
+        assert not (tmp_path / "src" / ".uncoded").exists()
+        assert not (tmp_path / "src" / "CLAUDE.md").exists()
+        for skill_path in SKILL_OUTPUTS:
+            assert not (tmp_path / "src" / skill_path).exists()
+
+    def test_artefacts_match_when_run_from_subdir_vs_project_root(
+        self, tmp_path, monkeypatch
+    ):
+        # Behavioural acceptance for GH84: identical artefacts in
+        # identical locations whether sync runs from the project root
+        # or from a subdirectory.
+        def _mk_repo(under: Path) -> None:
+            (under / "pyproject.toml").write_text(
+                textwrap.dedent(
+                    """\
+                    [project]
+                    name = "demo"
+
+                    [tool.uncoded]
+                    source-roots = ["src"]
+                    """
+                )
+            )
+            (under / "src").mkdir()
+            (under / "src" / "foo.py").write_text("def hello(): pass\n")
+
+        from_root = tmp_path / "from_root"
+        from_subdir = tmp_path / "from_subdir"
+        from_root.mkdir()
+        from_subdir.mkdir()
+        _mk_repo(from_root)
+        _mk_repo(from_subdir)
+
+        monkeypatch.chdir(from_root)
+        assert cli._sync() == 0
+
+        monkeypatch.chdir(from_subdir / "src")
+        assert cli._sync() == 0
+
+        relpaths = [
+            Path(".uncoded/namespace.yaml"),
+            Path(".uncoded/stubs/src/foo.pyi"),
+            Path("CLAUDE.md"),
+            *SKILL_OUTPUTS,
+        ]
+        for rel in relpaths:
+            assert (from_root / rel).read_text() == (from_subdir / rel).read_text(), (
+                f"artefact differs at {rel}"
+            )
 
 
 class TestSyncCheckMode:

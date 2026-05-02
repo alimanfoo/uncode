@@ -74,19 +74,39 @@ class StubModule:
 def _first_sentence(
     node: ast.AsyncFunctionDef | ast.FunctionDef | ast.ClassDef | ast.Module,
 ) -> str | None:
-    """Return the first sentence of a node's docstring, or None."""
+    """Return the first sentence, or first line, of a node's docstring.
+
+    The contract is "first sentence or first line, whichever comes
+    first," so the consumer (the stub renderer) always receives a
+    single-line excerpt suitable for a one-line ``.pyi`` docstring.
+
+    A sentence boundary is a period followed by whitespace and a
+    capital letter. The capital-letter requirement deliberately
+    avoids truncation at lowercase-after-period abbreviations like
+    ``e.g.``, ``i.e.``, and ``U.S.``. When no such boundary exists
+    in the docstring, the function falls back to the substring up
+    to the first newline, so single-line docstrings without a
+    trailing period and multi-line docstrings without an internal
+    sentence boundary still yield a usable excerpt.
+
+    Returns ``None`` only when the node has no docstring or the
+    docstring is whitespace-only. (``ast.get_docstring(clean=True)``
+    normalises whitespace-only docstrings to ``""``.)
+
+    Documented non-contract: docstrings starting with capital-letter
+    abbreviations such as ``Mr. Smith arrived.`` or ``Dr. Jones``
+    truncate at the abbreviation. The heuristic cannot tell a
+    title-plus-name from a true sentence break; disambiguating these
+    would require a tokeniser or a whitelist, which the function
+    deliberately stops short of.
+    """
     docstring = ast.get_docstring(node)
     if not docstring:
         return None
-    # Sentence boundary: ``.`` followed by whitespace and a capital.
-    # The capital-letter requirement avoids truncation at lowercase-
-    # after-period abbreviations like ``e.g.``, ``i.e.``, ``U.S.``.
-    # Known limitation: ``Mr. Smith arrived.`` still truncates at the
-    # abbreviation, because the capital is genuinely there.
-    # Disambiguating those would need a tokeniser or a whitelist.
     match = re.match(r"(.+?\.(?=\s+[A-Z])|.+?(?=\n))", docstring.strip() + "\n")
-    if match is None:
-        return None
+    # docstring is non-empty post-cleandoc, so .strip() leaves at least
+    # one non-whitespace character; alt-2 ``.+?(?=\n)`` always matches.
+    assert match is not None
     return match.group(1)
 
 
@@ -358,6 +378,7 @@ def _write_stubs(
     output_dir: Path,
     base: Path,
     *,
+    root: Path | None = None,
     check: bool,
 ) -> int:
     """Write *stubs* under *output_dir* and prune orphans under *source_root*.
@@ -377,6 +398,11 @@ def _write_stubs(
     pruned. Only the subtree corresponding to ``source_root`` is
     touched, so other source roots' stubs are not affected.
 
+    When ``root`` is provided, ``output_dir`` is treated as relative to
+    ``root`` for filesystem I/O while printed messages remain
+    project-relative. Without ``root``, paths resolve against the current
+    working directory.
+
     When ``check=True``, the on-disk tree is not mutated; instead,
     prospective writes and removals are reported and counted. Returns
     the number of changes (or prospective changes).
@@ -385,9 +411,10 @@ def _write_stubs(
     expected: set[Path] = set()
     for rel_stub_path, content in stubs.items():
         stub_path = output_dir / rel_stub_path
-        if sync_file(stub_path, content, check=check):
+        if sync_file(stub_path, content, root=root, check=check):
             changes += 1
-        expected.add(stub_path.resolve())
+        anchored = root / stub_path if root is not None else stub_path
+        expected.add(anchored.resolve())
 
     try:
         source_rel = source_root.resolve().relative_to(base)
@@ -395,18 +422,24 @@ def _write_stubs(
         # source_root is outside base; we have no safe subtree to clean.
         return changes
     stubs_root = output_dir / source_rel
-    if not stubs_root.exists():
+    abs_stubs_root = root / stubs_root if root is not None else stubs_root
+    if not abs_stubs_root.exists():
         return changes
 
-    for existing in stubs_root.rglob("*.pyi"):
-        if existing.resolve() not in expected and remove_file(existing, check=check):
+    for existing in abs_stubs_root.rglob("*.pyi"):
+        if existing.resolve() in expected:
+            continue
+        display = existing.relative_to(root) if root is not None else existing
+        if remove_file(display, root=root, check=check):
             changes += 1
 
     if check:
         return changes
 
-    # Prune now-empty directories, deepest-first, but keep stubs_root itself.
-    for d in sorted(stubs_root.rglob("*"), key=lambda p: len(p.parts), reverse=True):
+    # Prune now-empty directories, deepest-first, but keep abs_stubs_root itself.
+    for d in sorted(
+        abs_stubs_root.rglob("*"), key=lambda p: len(p.parts), reverse=True
+    ):
         if d.is_dir() and not any(d.iterdir()):
             d.rmdir()
 
@@ -418,6 +451,7 @@ def build_stubs(
     output_dir: Path = DEFAULT_STUBS_OUTPUT,
     base: Path | None = None,
     *,
+    root: Path | None = None,
     check: bool = False,
 ) -> int:
     """Sync stub files for all symbols under source_root, removing any orphans.
@@ -428,6 +462,10 @@ def build_stubs(
     ``rel_path`` headers match the project-relative paths that
     :func:`walk_source` and the namespace map use.
 
+    When ``root`` is provided, ``output_dir`` is treated as relative to
+    ``root`` for filesystem I/O while printed messages remain
+    project-relative.
+
     When ``check=True``, the on-disk tree is not mutated; instead,
     prospective writes and removals are reported and counted. Returns
     the number of changes (or prospective changes).
@@ -436,4 +474,4 @@ def build_stubs(
         base = Path.cwd()
     base = base.resolve()
     stubs = _generate_stubs(iter_source_files(source_root, base))
-    return _write_stubs(stubs, source_root, output_dir, base, check=check)
+    return _write_stubs(stubs, source_root, output_dir, base, root=root, check=check)

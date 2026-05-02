@@ -59,8 +59,9 @@ def read_source_roots(start: Path) -> list[Path]:
     try:
         roots = data["tool"]["uncoded"]["source-roots"]
     except KeyError:
-        raise KeyError(
-            "No [tool.uncoded] source-roots found in pyproject.toml."
+        raise LookupError(
+            "No [tool.uncoded] source-roots found in pyproject.toml. "
+            "Add [tool.uncoded] source-roots to configure."
         ) from None
 
     return [Path(r) for r in roots]

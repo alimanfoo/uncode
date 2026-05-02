@@ -14,7 +14,7 @@ VALUE_WIDTH_CAP = 80
 DEFAULT_STUBS_OUTPUT = Path('.uncoded/stubs')
 
 def _first_sentence(node: ast.AsyncFunctionDef | ast.FunctionDef | ast.ClassDef | ast.Module) -> str | None:
-    """Return the first sentence of a node's docstring, or None."""
+    """Return the first sentence, or first line, of a node's docstring."""
     ...
 
 def _extract_params(args: ast.arguments) -> list[StubParam]:
@@ -69,11 +69,11 @@ def _generate_stubs(files: Iterable[tuple[str, str]]) -> dict[Path, str]:
     """Return a mapping from stub relative paths to rendered stub content."""
     ...
 
-def _write_stubs(stubs: dict[Path, str], source_root: Path, output_dir: Path, base: Path, *, check: bool) -> int:
+def _write_stubs(stubs: dict[Path, str], source_root: Path, output_dir: Path, base: Path, *, root: Path | None, check: bool) -> int:
     """Write *stubs* under *output_dir* and prune orphans under *source_root*."""
     ...
 
-def build_stubs(source_root: Path, output_dir: Path, base: Path | None, *, check: bool) -> int:
+def build_stubs(source_root: Path, output_dir: Path, base: Path | None, *, root: Path | None, check: bool) -> int:
     """Sync stub files for all symbols under source_root, removing any orphans."""
     ...
 

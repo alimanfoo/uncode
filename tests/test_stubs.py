@@ -165,6 +165,47 @@ class TestExtractStub:
         module = extract_stub(source, "pkg/whitespace.py")
         assert module.functions[0].docstring_excerpt is None
 
+    def test_no_period_docstring_yields_first_line(self):
+        # Pins the "or its first line" half of _first_sentence's
+        # contract: a docstring with no sentence boundary still
+        # produces a usable excerpt rather than None.
+        source = textwrap.dedent("""\
+            def greet():
+                '''Hello world'''
+                pass
+        """)
+        module = extract_stub(source, "pkg/greet.py")
+        assert module.functions[0].docstring_excerpt == "Hello world"
+
+    def test_multiline_without_sentence_boundary_yields_first_line(self):
+        # Multi-line docstring whose first paragraph contains no
+        # period-then-capital boundary: the excerpt is the first
+        # line, not the joined paragraph.
+        source = textwrap.dedent("""\
+            def greet():
+                '''Hello world
+                more text on the next line
+                '''
+                pass
+        """)
+        module = extract_stub(source, "pkg/greet.py")
+        assert module.functions[0].docstring_excerpt == "Hello world"
+
+    def test_capital_abbreviation_truncates_as_documented_limit(self):
+        # Documented non-contract: docstrings starting with a
+        # capital-letter abbreviation (``Mr.``, ``Dr.``) truncate at
+        # the abbreviation because the heuristic cannot tell a
+        # title-plus-name from a real sentence break. Pinning the
+        # behaviour so a future contributor sees this is by design,
+        # not a regression to fix.
+        source = textwrap.dedent("""\
+            def describe():
+                '''Mr. Smith arrived. Then he left.'''
+                pass
+        """)
+        module = extract_stub(source, "pkg/describe.py")
+        assert module.functions[0].docstring_excerpt == "Mr."
+
     def test_module_docstring_extracted(self):
         # Module-level docstrings follow the same first-sentence convention
         # as class/function docstrings, so a multi-sentence module docstring
@@ -745,3 +786,38 @@ class TestWriteStubs:
         assert not (out / "src" / "pkg" / "orphan.pyi").exists()
         assert not (out / "src" / "pkg").exists()
         assert (out / "src").exists()
+
+    def test_root_anchors_writes_independent_of_cwd(self, tmp_path, monkeypatch):
+        # output_dir is project-relative; root anchors the actual writes
+        # under tmp_path even when cwd is elsewhere.
+        sub = tmp_path / "subdir"
+        sub.mkdir()
+        monkeypatch.chdir(sub)
+        src = tmp_path / "src"
+        src.mkdir()
+        out = Path("stubs")
+        stubs = {Path("src/foo.pyi"): "# stub\n"}
+
+        changes = _write_stubs(stubs, src, out, tmp_path, root=tmp_path, check=False)
+
+        assert changes == 1
+        assert (tmp_path / out / "src" / "foo.pyi").read_text() == "# stub\n"
+        assert not (sub / out / "src" / "foo.pyi").exists()
+
+    def test_root_anchors_orphan_pruning_independent_of_cwd(
+        self, tmp_path, monkeypatch
+    ):
+        sub = tmp_path / "subdir"
+        sub.mkdir()
+        monkeypatch.chdir(sub)
+        src = tmp_path / "src"
+        src.mkdir()
+        out = Path("stubs")
+        (tmp_path / out / "src" / "pkg").mkdir(parents=True)
+        (tmp_path / out / "src" / "pkg" / "orphan.pyi").write_text("# stale\n")
+
+        changes = _write_stubs({}, src, out, tmp_path, root=tmp_path, check=False)
+
+        assert changes == 1
+        assert not (tmp_path / out / "src" / "pkg" / "orphan.pyi").exists()
+        assert not (tmp_path / out / "src" / "pkg").exists()
