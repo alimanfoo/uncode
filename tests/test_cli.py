@@ -124,6 +124,25 @@ class TestSyncApplyMode:
         assert cli._sync() == 1
         assert "Error" in capsys.readouterr().err
 
+    def test_error_when_uncoded_section_missing(self, tmp_path, monkeypatch, capsys):
+        # User has pyproject.toml but no [tool.uncoded] section. The
+        # message must (a) not surface the KeyError quoting artefact —
+        # historically `Error: 'No ...'` with literal single quotes —
+        # and (b) include the same recovery hint as the missing-toml
+        # case, since this is the more common configuration error.
+        (tmp_path / "pyproject.toml").write_text("[tool.ruff]\n")
+        monkeypatch.chdir(tmp_path)
+
+        assert cli._sync() == 1
+
+        err = capsys.readouterr().err
+        assert (
+            "Error: No [tool.uncoded] source-roots found in pyproject.toml. "
+            "Add [tool.uncoded] source-roots to configure." in err
+        )
+        # No literal single-quote wrapping from KeyError.__str__.
+        assert "Error: 'No" not in err
+
     def test_skip_warning_emitted_once_per_broken_file(
         self, tmp_path, monkeypatch, capsys
     ):

@@ -57,8 +57,14 @@ class TestReadSourceRoots:
 
     def test_raises_if_no_uncoded_section(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text("[tool.ruff]\n")
-        with pytest.raises(KeyError):
+        with pytest.raises(LookupError) as excinfo:
             read_source_roots(start=tmp_path)
+        # KeyError would be wrong: its __str__ wraps the message in single
+        # quotes, which surfaces as "Error: 'No [tool.uncoded] ...'" in
+        # the CLI's f-string. LookupError is the parent type that
+        # formats cleanly and stays semantically correct.
+        assert not isinstance(excinfo.value, KeyError)
+        assert "Add [tool.uncoded] source-roots to configure" in str(excinfo.value)
 
 
 class TestReadInstructionFiles:

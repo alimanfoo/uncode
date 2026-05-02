@@ -56,7 +56,7 @@ def _sync(*, root: Path | None = None, check: bool = False) -> int:
         source_roots = [
             (project_root / r).resolve() for r in read_source_roots(project_root)
         ]
-    except KeyError as e:
+    except LookupError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
