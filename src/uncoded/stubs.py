@@ -89,9 +89,9 @@ def _first_sentence(
     trailing period and multi-line docstrings without an internal
     sentence boundary still yield a usable excerpt.
 
-    Returns ``None`` only when the node has no docstring, or the
-    docstring is whitespace-only (after ``ast.get_docstring``'s
-    ``clean=True`` normalisation reduces it to ``""``).
+    Returns ``None`` only when the node has no docstring or the
+    docstring is whitespace-only. (``ast.get_docstring(clean=True)``
+    normalises whitespace-only docstrings to ``""``.)
 
     Documented non-contract: docstrings starting with capital-letter
     abbreviations such as ``Mr. Smith arrived.`` or ``Dr. Jones``

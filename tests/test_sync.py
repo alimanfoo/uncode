@@ -97,7 +97,7 @@ class TestSyncFileRootAnchor:
 
         assert changed is True
         assert (tmp_path / rel).read_text() == "hello"
-        # Crucially, no write under cwd.
+        # No write under cwd.
         assert not (sub / rel).exists()
 
     def test_root_preserves_relative_path_in_message(

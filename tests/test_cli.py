@@ -237,7 +237,7 @@ class TestSyncApplyMode:
         assert cli._sync() == 0
 
         monkeypatch.chdir(from_subdir / "src")
-        assert cli._sync(root=from_subdir) == 0
+        assert cli._sync() == 0
 
         relpaths = [
             Path(".uncoded/namespace.yaml"),
