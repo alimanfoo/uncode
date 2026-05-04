@@ -66,9 +66,8 @@ until the end.
 ## Step 1: Orient
 
 Read `.uncoded/namespace.yaml` in full. This is the map — directories, files,
-classes, methods, functions — in source order. Do not skim. Every public symbol
-in the codebase is listed here, and the shape of the namespace itself is
-evidence.
+classes, methods, functions. Do not skim. Every public symbol in the codebase
+is listed here, and the shape of the namespace itself is evidence.
 
 While reading, note:
 

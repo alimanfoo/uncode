@@ -89,10 +89,10 @@ Read .uncoded/namespace.yaml
 ```
 
 This lists every symbol in the codebase — directories, files, classes,
-methods, functions — in source order. Without it loaded, "find X"
-answers come from pretrained guesses about what a project like this
-*probably* contains, rather than what is actually here. Read it once,
-in full, at session start.
+methods, functions. Without it loaded, "find X" answers come from
+pretrained guesses about what a project like this *probably* contains,
+rather than what is actually here. Read it once, in full, at session
+start.
 
 **Step 2 — Understand. Read the `.pyi` stub before any `.py` source.**
 Stub paths mirror source paths under `.uncoded/stubs/`:
