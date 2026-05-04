@@ -73,7 +73,7 @@ def _write_stubs(stubs: dict[Path, str], source_root: Path, output_dir: Path, ba
     """Write *stubs* under *output_dir* and prune orphans under *source_root*."""
     ...
 
-def build_stubs(source_root: Path, output_dir: Path, base: Path | None, *, root: Path | None, check: bool) -> int:
+def _build_stubs(*, source_root: Path, output_dir: Path, base: Path, check: bool) -> int:
     """Sync stub files for all symbols under source_root, removing any orphans."""
     ...
 
