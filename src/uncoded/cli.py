@@ -53,16 +53,19 @@ def _sync(*, root: Path | None = None, check: bool = False) -> int:
     project_root = pyproject_path.parent
 
     try:
-        source_roots = [
-            (project_root / r).resolve() for r in read_source_roots(project_root)
-        ]
+        configured_roots = read_source_roots(project_root)
     except LookupError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
+    source_roots = [(project_root / r).resolve() for r in configured_roots]
 
-    for src_root in source_roots:
+    for configured, src_root in zip(configured_roots, source_roots, strict=True):
         if not src_root.is_dir():
-            print(f"Error: {src_root} is not a directory", file=sys.stderr)
+            print(
+                f"Error: source root {configured} is not a directory. "
+                "Check [tool.uncoded] source-roots in pyproject.toml.",
+                file=sys.stderr,
+            )
             return 1
 
     changes = 0

@@ -109,6 +109,10 @@ class TestSyncApplyMode:
         assert "Error" in capsys.readouterr().err
 
     def test_error_when_source_root_missing(self, tmp_path, monkeypatch, capsys):
+        # The message must (a) report the source-root path as the user
+        # typed it in [tool.uncoded] source-roots, not the resolved
+        # absolute path (which leaks the developer's filesystem layout),
+        # and (b) include a recovery hint pointing at the config key.
         (tmp_path / "pyproject.toml").write_text(
             textwrap.dedent(
                 """\
@@ -121,8 +125,13 @@ class TestSyncApplyMode:
             )
         )
         monkeypatch.chdir(tmp_path)
+
         assert cli._sync() == 1
-        assert "Error" in capsys.readouterr().err
+
+        err = capsys.readouterr().err
+        assert "Error: source root nope is not a directory." in err
+        assert "Check [tool.uncoded] source-roots in pyproject.toml." in err
+        assert str(tmp_path) not in err
 
     def test_error_when_uncoded_section_missing(self, tmp_path, monkeypatch, capsys):
         # User has pyproject.toml but no [tool.uncoded] section. The
