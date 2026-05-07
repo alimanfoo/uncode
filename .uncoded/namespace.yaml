@@ -12,7 +12,6 @@ src/:
     __init__.py:
       __version__:
     cli.py:
-      DEFAULT_MAP_OUTPUT:
       _sync:
       main:
     config.py:
@@ -69,7 +68,6 @@ src/:
       sync_skill:
     stubs.py:
       VALUE_WIDTH_CAP:
-      DEFAULT_STUBS_OUTPUT:
       StubParam:
         name:
         annotation:

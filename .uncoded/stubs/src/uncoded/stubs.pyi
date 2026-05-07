@@ -11,7 +11,6 @@ from uncoded.extract import _property_kind, iter_source_files
 from uncoded.sync import remove_file, sync_file
 
 VALUE_WIDTH_CAP = 80
-DEFAULT_STUBS_OUTPUT = Path('.uncoded/stubs')
 
 def _first_sentence(node: ast.AsyncFunctionDef | ast.FunctionDef | ast.ClassDef | ast.Module) -> str | None:
     """Return the first sentence, or first line, of a node's docstring."""

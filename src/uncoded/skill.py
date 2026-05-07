@@ -383,10 +383,10 @@ others raise, for the same kind of operation.</flag>
 def sync_skill(*, project_root: Path | None = None, check: bool) -> bool:
     """Write the coherence-review skill file to all supported agent locations.
 
-    When ``project_root`` is provided, the configured output paths are
-    resolved against ``project_root`` for filesystem I/O while printed
-    messages remain project-relative. Without ``project_root``, paths
-    resolve against the current working directory.
+    When ``project_root`` is given, the skill files are written under
+    ``project_root``. Log lines still name each configured path as
+    given, so messages stay project-relative regardless of where the
+    caller is running from.
     """
     results = [
         sync_file(path, _SKILL_CONTENT, project_root=project_root, check=check)
