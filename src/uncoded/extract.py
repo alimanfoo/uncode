@@ -99,24 +99,24 @@ def extract_module(source: str, rel_path: str) -> ModuleInfo:
 
 
 def iter_source_files(
-    source_root: Path, base: Path | None = None
+    source_root: Path, project_root: Path | None = None
 ) -> Iterator[tuple[str, str]]:
     """Yield (source_text, rel_path) for every parseable Python file in *source_root*.
 
-    Paths are relative to *base* (defaults to cwd). Files that fail to
+    Paths are relative to *project_root* (defaults to cwd). Files that fail to
     parse are skipped with a single ``warning: skipping ...`` line on
     stderr — centralising the syntax-error decision here lets downstream
     consumers (``walk_source``, ``_generate_stubs``) trust they only
     receive parseable source.
     """
-    if base is None:
-        base = Path.cwd()
+    if project_root is None:
+        project_root = Path.cwd()
 
     source_root = source_root.resolve()
-    base = base.resolve()
+    project_root = project_root.resolve()
 
     for py_file in sorted(source_root.rglob("*.py")):
-        rel_path = str(py_file.relative_to(base))
+        rel_path = str(py_file.relative_to(project_root))
         source = py_file.read_text()
         try:
             ast.parse(source, rel_path)
@@ -146,10 +146,12 @@ def extract_modules(files: Iterable[tuple[str, str]]) -> list[ModuleInfo]:
     return modules
 
 
-def walk_source(source_root: Path, base: Path | None = None) -> list[ModuleInfo]:
+def walk_source(
+    source_root: Path, project_root: Path | None = None
+) -> list[ModuleInfo]:
     """Walk a source root and extract symbols from all Python files.
 
-    Paths in the returned ModuleInfo are relative to *base* (defaults to
+    Paths in the returned ModuleInfo are relative to *project_root* (defaults to
     cwd), so they can be used directly to open files from the repo root.
 
     Convenience wrapper around :func:`iter_source_files` and
@@ -157,4 +159,4 @@ def walk_source(source_root: Path, base: Path | None = None) -> list[ModuleInfo]
     by ``iter_source_files`` (which emits a stderr warning naming the
     offending file).
     """
-    return extract_modules(iter_source_files(source_root, base))
+    return extract_modules(iter_source_files(source_root, project_root))

@@ -69,7 +69,7 @@ def _sync(*, start: Path | None = None, check: bool = False) -> int:
     changes = 0
 
     roots_with_files = [
-        (src_root, list(iter_source_files(src_root, base=project_root)))
+        (src_root, list(iter_source_files(src_root, project_root=project_root)))
         for src_root in source_roots
     ]
 

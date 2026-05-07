@@ -118,7 +118,7 @@ class TestExtractModule:
         pkg.mkdir(parents=True)
         (pkg / "__init__.py").write_text('__version__ = "1.0"\n')
 
-        modules = walk_source(src, base=tmp_path)
+        modules = walk_source(src, project_root=tmp_path)
 
         rel_paths = [m.rel_path for m in modules]
         assert "src/mypackage/__init__.py" in rel_paths
@@ -225,7 +225,7 @@ class TestWalkSource:
         (pkg / "_internal.py").write_text("def helper(): pass\n")
         (pkg / "empty.py").write_text("# nothing here\n")
 
-        modules = walk_source(src, base=tmp_path)
+        modules = walk_source(src, project_root=tmp_path)
 
         rel_paths = [m.rel_path for m in modules]
         assert "src/mypackage/core.py" in rel_paths
@@ -242,7 +242,7 @@ class TestWalkSource:
         (sub / "__init__.py").write_text("")
         (sub / "formatting.py").write_text("def format_output(): pass\n")
 
-        modules = walk_source(src, base=tmp_path)
+        modules = walk_source(src, project_root=tmp_path)
 
         rel_paths = [m.rel_path for m in modules]
         assert "src/mypackage/utils/formatting.py" in rel_paths
@@ -254,7 +254,7 @@ class TestWalkSource:
         (pkg / "__init__.py").write_text("def create(): pass\n")
         (pkg / "core.py").write_text("def run(): pass\n")
 
-        modules = walk_source(src, base=tmp_path)
+        modules = walk_source(src, project_root=tmp_path)
 
         rel_paths = [m.rel_path for m in modules]
         assert "src/mypackage/__init__.py" in rel_paths
@@ -267,7 +267,7 @@ class TestWalkSource:
         (pkg / "__init__.py").write_text("")
         (pkg / "core.py").write_text("def run(): pass\n")
 
-        modules = walk_source(src, base=tmp_path)
+        modules = walk_source(src, project_root=tmp_path)
 
         rel_paths = [m.rel_path for m in modules]
         assert not any("__init__.py" in p for p in rel_paths)
@@ -280,7 +280,7 @@ class TestWalkSource:
         (pkg / "good.py").write_text("def works(): pass\n")
         (pkg / "bad.py").write_text("def broken(:\n")
 
-        modules = walk_source(src, base=tmp_path)
+        modules = walk_source(src, project_root=tmp_path)
 
         rel_paths = [m.rel_path for m in modules]
         assert "src/mypackage/good.py" in rel_paths
