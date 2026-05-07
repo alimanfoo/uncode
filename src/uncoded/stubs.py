@@ -386,13 +386,12 @@ def _write_stubs(
     rendered content; typically the return value of
     :func:`_generate_stubs`.
 
-    ``project_root`` is the single project anchor and must already be
-    resolved. ``output_dir`` is anchored at ``project_root`` for
-    filesystem I/O while printed messages remain project-relative, and
-    the orphan-cleanup subtree is anchored at
-    ``output_dir / source_root.relative_to(project_root)`` (so
-    ``project_root`` must be an ancestor of ``source_root`` for cleanup
-    to run; otherwise cleanup is skipped).
+    Stubs are written under ``project_root``; log lines stay
+    project-relative. ``project_root`` must already be resolved.
+
+    Orphan cleanup walks the subtree under ``project_root`` that
+    mirrors ``source_root``. ``source_root`` must therefore live under
+    ``project_root``; otherwise cleanup is skipped.
 
     Writes only files whose content has changed. After reconciling the
     current set of stubs, any pre-existing ``.pyi`` files in the

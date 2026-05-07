@@ -27,13 +27,11 @@ def sync_file(
     performed, ``False`` if the file was already up to date. Parent
     directories are created as needed.
 
-    When ``project_root`` is provided, ``path`` is treated as relative to
-    ``project_root`` for filesystem I/O while the printed message still
-    names ``path`` as given. This lets callers anchor writes at a project
-    root regardless of the current working directory while keeping log
-    lines project-relative. Passing an absolute ``path`` makes
-    ``project_root`` a no-op (the absolute side wins under ``Path``'s
-    join semantics).
+    When ``project_root`` is given, the file is written to
+    ``project_root / path``. The log line still names ``path`` as given,
+    so messages stay project-relative regardless of where the caller is
+    running from. If ``path`` is absolute, it's used as-is and
+    ``project_root`` has no effect.
     """
     target = project_root / path if project_root is not None else path
     if not target.exists():
@@ -62,9 +60,10 @@ def remove_file(
     Returns ``True`` if a removal was (or would be) performed, ``False``
     if the file was already absent.
 
-    When ``project_root`` is provided, ``path`` is treated as relative to
-    ``project_root`` for filesystem I/O while the printed message still
-    names ``path`` as given.
+    When ``project_root`` is given, the file removed is
+    ``project_root / path``. The log line still names ``path`` as given,
+    so messages stay project-relative regardless of where the caller is
+    running from.
     """
     target = project_root / path if project_root is not None else path
     if not target.exists():
