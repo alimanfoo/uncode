@@ -383,8 +383,10 @@ def _write_stubs(
     rendered content; typically the return value of
     :func:`_generate_stubs`.
 
-    Stubs are written under ``project_root``; log lines stay
-    project-relative. ``project_root`` must already be resolved.
+    Each stub is written to ``project_root / output_dir / <rel>``. Log
+    lines still name each path as given, so messages stay
+    project-relative regardless of where the caller is running from.
+    ``project_root`` must already be resolved.
 
     Orphan cleanup walks the subtree under ``project_root`` that
     mirrors ``source_root``. ``source_root`` must therefore live under
@@ -448,10 +450,11 @@ def _build_stubs(
 ) -> int:
     """Sync stub files for all symbols under source_root, removing any orphans.
 
-    Internal end-to-end helper used by the test suite. Stub paths are
-    rendered relative to *project_root*, so the rendered ``rel_path``
-    headers match the project-relative paths that :func:`walk_source`
-    and the namespace map use.
+    Internal end-to-end helper used by the test suite. ``project_root``
+    is the anchor for both ends of the pipeline: source paths are made
+    relative to it (so each stub's rendered ``rel_path`` header matches
+    :func:`walk_source` and the namespace map), and each stub is
+    written to ``project_root / output_dir / <rel>``.
 
     When ``check=True``, the on-disk tree is not mutated; instead,
     prospective writes and removals are reported and counted. Returns

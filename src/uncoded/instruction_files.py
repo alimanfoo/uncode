@@ -168,9 +168,11 @@ def sync_instruction_file(
     When ``check=True``, reports a prospective change without touching disk.
     Returns ``True`` if a write was (or would be) performed.
 
-    When ``project_root`` is provided, ``path`` is resolved against
-    ``project_root`` for filesystem I/O while the printed message remains
-    ``path`` for project-relative display.
+    When ``project_root`` is given, the file is written to
+    ``project_root / path``. The log line still names ``path`` as given,
+    so messages stay project-relative regardless of where the caller is
+    running from. If ``path`` is absolute, it's used as-is and
+    ``project_root`` has no effect.
     """
     section = generate_section()
     target = project_root / path if project_root is not None else path

@@ -103,11 +103,14 @@ def iter_source_files(
 ) -> Iterator[tuple[str, str]]:
     """Yield (source_text, rel_path) for every parseable Python file in *source_root*.
 
-    Paths are relative to *project_root* (defaults to cwd). Files that fail to
-    parse are skipped with a single ``warning: skipping ...`` line on
-    stderr — centralising the syntax-error decision here lets downstream
-    consumers (``walk_source``, ``_generate_stubs``) trust they only
-    receive parseable source.
+    When ``project_root`` is given, each yielded ``rel_path`` is the
+    file's path relative to ``project_root``; without it, paths are
+    relative to the current working directory.
+
+    Files that fail to parse are skipped with a single ``warning:
+    skipping ...`` line on stderr — centralising the syntax-error
+    decision here lets downstream consumers (``walk_source``,
+    ``_generate_stubs``) trust they only receive parseable source.
     """
     if project_root is None:
         project_root = Path.cwd()
@@ -151,8 +154,10 @@ def walk_source(
 ) -> list[ModuleInfo]:
     """Walk a source root and extract symbols from all Python files.
 
-    Paths in the returned ModuleInfo are relative to *project_root* (defaults to
-    cwd), so they can be used directly to open files from the repo root.
+    When ``project_root`` is given, each returned
+    ``ModuleInfo.rel_path`` is the file's path relative to
+    ``project_root``; without it, paths are relative to the current
+    working directory.
 
     Convenience wrapper around :func:`iter_source_files` and
     :func:`extract_modules`. Files with syntax errors are filtered out
