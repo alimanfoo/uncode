@@ -14,10 +14,8 @@ from uncoded.instruction_files import sync_instruction_file
 from uncoded.namespace_map import build_map, render_map
 from uncoded.serena_setup import setup
 from uncoded.skill import sync_skill
-from uncoded.stubs import DEFAULT_STUBS_OUTPUT, _generate_stubs, _write_stubs
+from uncoded.stubs import _generate_stubs, _write_stubs
 from uncoded.sync import sync_file
-
-DEFAULT_MAP_OUTPUT = Path(".uncoded/namespace.yaml")
 
 
 def _sync(*, start: Path | None = None, check: bool = False) -> int:
@@ -78,7 +76,10 @@ def _sync(*, start: Path | None = None, check: bool = False) -> int:
     ]
     map_content = render_map(build_map(modules))
     if sync_file(
-        DEFAULT_MAP_OUTPUT, map_content, project_root=project_root, check=check
+        Path(".uncoded/namespace.yaml"),
+        map_content,
+        project_root=project_root,
+        check=check,
     ):
         changes += 1
 
@@ -87,7 +88,7 @@ def _sync(*, start: Path | None = None, check: bool = False) -> int:
         changes += _write_stubs(
             stubs=stubs,
             source_root=src_root,
-            output_dir=DEFAULT_STUBS_OUTPUT,
+            output_dir=Path(".uncoded/stubs"),
             project_root=project_root,
             check=check,
         )

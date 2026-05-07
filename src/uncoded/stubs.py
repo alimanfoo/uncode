@@ -369,9 +369,6 @@ def _generate_stubs(files: Iterable[tuple[str, str]]) -> dict[Path, str]:
     return result
 
 
-DEFAULT_STUBS_OUTPUT = Path(".uncoded/stubs")
-
-
 def _write_stubs(
     *,
     stubs: dict[Path, str],
