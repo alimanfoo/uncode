@@ -63,7 +63,8 @@ def remove_file(
     When ``project_root`` is given, the file removed is
     ``project_root / path``. The log line still names ``path`` as given,
     so messages stay project-relative regardless of where the caller is
-    running from.
+    running from. If ``path`` is absolute, it's used as-is and
+    ``project_root`` has no effect.
     """
     target = project_root / path if project_root is not None else path
     if not target.exists():
