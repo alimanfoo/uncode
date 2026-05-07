@@ -340,8 +340,8 @@ tests/:
       test_writes_stubs:
       test_check_mode_does_not_write:
       test_prunes_orphan_stubs:
-      test_root_anchors_writes_independent_of_cwd:
-      test_root_anchors_orphan_pruning_independent_of_cwd:
+      test_project_root_anchors_writes_independent_of_cwd:
+      test_project_root_anchors_orphan_pruning_independent_of_cwd:
   test_sync.py:
     TestSyncFile:
       test_creates_missing_file:

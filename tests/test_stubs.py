@@ -864,7 +864,9 @@ class TestWriteStubs:
         assert not (out / "src" / "pkg").exists()
         assert (out / "src").exists()
 
-    def test_root_anchors_writes_independent_of_cwd(self, tmp_path, monkeypatch):
+    def test_project_root_anchors_writes_independent_of_cwd(
+        self, tmp_path, monkeypatch
+    ):
         # output_dir is project-relative; project_root anchors the actual
         # writes under tmp_path even when cwd is elsewhere.
         sub = tmp_path / "subdir"
@@ -887,7 +889,7 @@ class TestWriteStubs:
         assert (tmp_path / out / "src" / "foo.pyi").read_text() == "# stub\n"
         assert not (sub / out / "src" / "foo.pyi").exists()
 
-    def test_root_anchors_orphan_pruning_independent_of_cwd(
+    def test_project_root_anchors_orphan_pruning_independent_of_cwd(
         self, tmp_path, monkeypatch
     ):
         sub = tmp_path / "subdir"
