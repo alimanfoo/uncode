@@ -23,16 +23,12 @@ DEFAULT_MAP_OUTPUT = Path(".uncoded/namespace.yaml")
 def _sync(*, start: Path | None = None, check: bool = False) -> int:
     """Sync (or verify) the namespace map, stub files, and instruction-file sections.
 
-    ``start`` is the directory the upward walk for ``pyproject.toml``
-    begins from; the parent of the located ``pyproject.toml`` becomes
-    the project anchor for every project-relative path — both the
-    *inputs* (source roots, instruction-file paths, the rel-paths
-    rendered into the namespace map and stubs) and the *outputs*
-    (``DEFAULT_MAP_OUTPUT``, ``DEFAULT_STUBS_OUTPUT``, the skill output
-    paths, and the instruction-file write target). Defaults to the
-    current working directory at the CLI boundary. Running from a
-    subdirectory of the project produces artefacts in the same
-    locations as running from the project root.
+    The upward walk for ``pyproject.toml`` begins at ``start`` (defaulting
+    to the current working directory at the CLI boundary). The parent of
+    the located ``pyproject.toml`` becomes ``project_root``: the single
+    anchor every writer uses for project-relative paths it reads or
+    writes. Running from a subdirectory of the project produces artefacts
+    in the same locations as running from the project root.
 
     When ``check=True``, the on-disk tree is not mutated: each step reports
     whether it would write. Returns 1 if any step reports a prospective
