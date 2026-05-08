@@ -28,20 +28,20 @@ def _sync(*, start: Path | None = None, check: bool = False) -> int:
     writes. Running from a subdirectory of the project produces artefacts
     in the same locations as running from the project root.
 
-    When ``check=True``, the on-disk tree is not mutated: each step reports
-    whether it would write. Returns 1 if any step reports a prospective
-    change (so CI can gate on a stale index), 0 if the tree is already in
-    sync.
+    Configuration errors return 1 in both modes; the three sites are
+    checked before the apply/check branch. If no ``pyproject.toml`` is
+    found anywhere up from ``start``, stderr names the missing file and
+    tells the user to create one with a ``[tool.uncoded]`` ``source-roots``
+    entry. If the located ``pyproject.toml`` has no ``[tool.uncoded]``
+    ``source-roots`` entry, the ``LookupError`` from ``read_source_roots``
+    is re-printed verbatim as ``Error: {e}``. If a configured source root
+    is not a directory, stderr names the entry as the user wrote it and
+    points at the ``[tool.uncoded]`` ``source-roots`` key.
 
-    In apply mode, returns 0 on success and 1 on a configuration error.
-    Three sites can fail. If no ``pyproject.toml`` is found anywhere up
-    from ``start``, stderr names the missing file and tells the user to
-    create one with a ``[tool.uncoded]`` ``source-roots`` entry. If the
-    located ``pyproject.toml`` has no ``[tool.uncoded]`` ``source-roots``
-    entry, the ``LookupError`` from ``read_source_roots`` is re-printed
-    verbatim as ``Error: {e}``. If a configured source root is not a
-    directory, stderr names the entry as the user wrote it and points at
-    the ``[tool.uncoded]`` ``source-roots`` key.
+    After configuration validates, ``check=True`` reports each prospective
+    write without mutating the on-disk tree, returning 1 if any step would
+    write (so CI can gate on a stale index) and 0 if the tree is already
+    in sync. Apply mode performs those writes and returns 0.
     """
     if start is None:
         start = Path.cwd()
