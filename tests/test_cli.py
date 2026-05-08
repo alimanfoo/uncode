@@ -146,8 +146,9 @@ class TestSyncApplyMode:
         # User has pyproject.toml but no [tool.uncoded] section. The
         # message must (a) not surface the KeyError quoting artefact —
         # historically `Error: 'No ...'` with literal single quotes —
-        # and (b) include the same recovery hint as the missing-toml
-        # case, since this is the more common configuration error.
+        # and (b) include a recovery hint case-specific to this state
+        # ("Add [tool.uncoded] source-roots to configure"), because the
+        # user has a pyproject.toml but lacks the section.
         (tmp_path / "pyproject.toml").write_text("[tool.ruff]\n")
         monkeypatch.chdir(tmp_path)
 
