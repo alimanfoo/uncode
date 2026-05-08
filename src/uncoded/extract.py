@@ -26,7 +26,7 @@ class ModuleInfo:
     functions: list[str] = field(default_factory=list)
 
 
-def _property_kind(
+def property_kind(
     node: ast.FunctionDef | ast.AsyncFunctionDef,
 ) -> str | None:
     """Classify a method by its property-related decorators.
@@ -71,7 +71,7 @@ def extract_module(source: str, rel_path: str) -> ModuleInfo:
                     if name:
                         attributes.append(name)
                 elif isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    kind = _property_kind(n)
+                    kind = property_kind(n)
                     if kind == "setter" or kind == "deleter":
                         continue
                     if kind == "property":

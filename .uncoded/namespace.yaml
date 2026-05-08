@@ -29,7 +29,7 @@ src/:
         constants:
         classes:
         functions:
-      _property_kind:
+      property_kind:
       _assign_target_name:
       extract_module:
       iter_source_files:

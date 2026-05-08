@@ -8,7 +8,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
-def _property_kind(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str | None:
+def property_kind(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str | None:
     """Classify a method by its property-related decorators."""
     ...
 

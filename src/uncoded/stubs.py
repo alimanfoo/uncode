@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from uncoded.extract import _property_kind
+from uncoded.extract import property_kind
 from uncoded.sync import remove_file, sync_file
 
 # Width cap for inlining the right-hand side of an assignment. If the unparsed
@@ -228,7 +228,7 @@ def _extract_class(node: ast.ClassDef) -> StubClass:
             if assignment is not None:
                 attributes.append(assignment)
         elif isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            kind = _property_kind(child)
+            kind = property_kind(child)
             if kind == "setter" or kind == "deleter":
                 continue
             if kind == "property":
