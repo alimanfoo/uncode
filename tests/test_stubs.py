@@ -10,8 +10,8 @@ from uncoded.stubs import (
     StubFunction,
     StubModule,
     StubParam,
-    _build_stubs,
     _write_stubs,
+    build_stubs,
     extract_stub,
     render_stub,
 )
@@ -621,7 +621,7 @@ class TestRenderStub:
 
 
 class TestBuildStubs:
-    """_build_stubs writes expected stubs and removes orphans for its source root."""
+    """build_stubs writes expected stubs and removes orphans for its source root."""
 
     def _setup(self, tmp_path):
         src = tmp_path / "src"
@@ -632,7 +632,7 @@ class TestBuildStubs:
     def test_writes_expected_stubs(self, tmp_path):
         src, out = self._setup(tmp_path)
         (src / "foo.py").write_text("def hello(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -645,7 +645,7 @@ class TestBuildStubs:
         src, out = self._setup(tmp_path)
         (src / "foo.py").write_text("def hello(): pass\n")
         (src / "bar.py").write_text("def goodbye(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -655,7 +655,7 @@ class TestBuildStubs:
         assert (out / "src" / "bar.pyi").exists()
 
         (src / "bar.py").unlink()
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -668,7 +668,7 @@ class TestBuildStubs:
     def test_removes_orphan_stub_when_source_renamed(self, tmp_path):
         src, out = self._setup(tmp_path)
         (src / "old_name.py").write_text("def hello(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -678,7 +678,7 @@ class TestBuildStubs:
         assert (out / "src" / "old_name.pyi").exists()
 
         (src / "old_name.py").rename(src / "new_name.py")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -693,7 +693,7 @@ class TestBuildStubs:
         pkg = src / "pkg"
         pkg.mkdir()
         (pkg / "mod.py").write_text("def hello(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -705,7 +705,7 @@ class TestBuildStubs:
         # Remove the whole subpackage; the stub directory should be pruned.
         (pkg / "mod.py").unlink()
         pkg.rmdir()
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -721,14 +721,14 @@ class TestBuildStubs:
         (src / "foo.py").write_text("def hello(): pass\n")
         (tests / "test_foo.py").write_text("def test_hello(): pass\n")
 
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
             project_root=tmp_path,
             check=False,
         )
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(tests, project_root=tmp_path)),
             source_root=tests,
             output_dir=out,
@@ -739,7 +739,7 @@ class TestBuildStubs:
         assert (out / "tests" / "test_foo.pyi").exists()
 
         # Rebuilding only `src` must leave the `tests` stub alone.
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -751,7 +751,7 @@ class TestBuildStubs:
     def test_no_op_when_clean(self, tmp_path):
         src, out = self._setup(tmp_path)
         (src / "foo.py").write_text("def hello(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -760,7 +760,7 @@ class TestBuildStubs:
         )
         # Second build with no source changes should not error and should
         # leave the stub in place.
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -774,7 +774,7 @@ class TestBuildStubs:
         (src / "foo.py").write_text("def hello(): pass\n")
         (src / "bar.py").write_text("def goodbye(): pass\n")
         assert (
-            _build_stubs(
+            build_stubs(
                 files=list(iter_source_files(src, project_root=tmp_path)),
                 source_root=src,
                 output_dir=out,
@@ -787,7 +787,7 @@ class TestBuildStubs:
     def test_reports_zero_when_clean(self, tmp_path):
         src, out = self._setup(tmp_path)
         (src / "foo.py").write_text("def hello(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -795,7 +795,7 @@ class TestBuildStubs:
             check=False,
         )
         assert (
-            _build_stubs(
+            build_stubs(
                 files=list(iter_source_files(src, project_root=tmp_path)),
                 source_root=src,
                 output_dir=out,
@@ -807,7 +807,7 @@ class TestBuildStubs:
 
 
 class TestBuildStubsCheckMode:
-    """_build_stubs with check=True must report changes without mutating the tree."""
+    """build_stubs with check=True must report changes without mutating the tree."""
 
     def _setup(self, tmp_path):
         src = tmp_path / "src"
@@ -818,7 +818,7 @@ class TestBuildStubsCheckMode:
     def test_does_not_write_stub_in_check_mode(self, tmp_path):
         src, out = self._setup(tmp_path)
         (src / "foo.py").write_text("def hello(): pass\n")
-        changes = _build_stubs(
+        changes = build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -831,7 +831,7 @@ class TestBuildStubsCheckMode:
     def test_zero_changes_when_clean(self, tmp_path):
         src, out = self._setup(tmp_path)
         (src / "foo.py").write_text("def hello(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -839,7 +839,7 @@ class TestBuildStubsCheckMode:
             check=False,
         )
         assert (
-            _build_stubs(
+            build_stubs(
                 files=list(iter_source_files(src, project_root=tmp_path)),
                 source_root=src,
                 output_dir=out,
@@ -852,7 +852,7 @@ class TestBuildStubsCheckMode:
     def test_detects_stale_stub_content(self, tmp_path):
         src, out = self._setup(tmp_path)
         (src / "foo.py").write_text("def hello(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -862,7 +862,7 @@ class TestBuildStubsCheckMode:
         # Simulate a source edit that would change the stub.
         (src / "foo.py").write_text("def hello(name: str) -> str: pass\n")
         assert (
-            _build_stubs(
+            build_stubs(
                 files=list(iter_source_files(src, project_root=tmp_path)),
                 source_root=src,
                 output_dir=out,
@@ -876,7 +876,7 @@ class TestBuildStubsCheckMode:
         src, out = self._setup(tmp_path)
         (src / "foo.py").write_text("def hello(): pass\n")
         (src / "bar.py").write_text("def goodbye(): pass\n")
-        _build_stubs(
+        build_stubs(
             files=list(iter_source_files(src, project_root=tmp_path)),
             source_root=src,
             output_dir=out,
@@ -885,7 +885,7 @@ class TestBuildStubsCheckMode:
         )
         (src / "bar.py").unlink()
         assert (
-            _build_stubs(
+            build_stubs(
                 files=list(iter_source_files(src, project_root=tmp_path)),
                 source_root=src,
                 output_dir=out,

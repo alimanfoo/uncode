@@ -72,7 +72,7 @@ def _write_stubs(*, stubs: dict[Path, str], source_root: Path, output_dir: Path,
     """Write *stubs* under *output_dir* and prune orphans under *source_root*."""
     ...
 
-def _build_stubs(*, files: Iterable[tuple[str, str]], source_root: Path, output_dir: Path, project_root: Path, check: bool) -> int:
+def build_stubs(*, files: Iterable[tuple[str, str]], source_root: Path, output_dir: Path, project_root: Path, check: bool) -> int:
     """Sync stub files for all symbols under source_root, removing any orphans."""
     ...
 

@@ -441,7 +441,7 @@ def _write_stubs(
     return changes
 
 
-def _build_stubs(
+def build_stubs(
     *,
     files: Iterable[tuple[str, str]],
     source_root: Path,
