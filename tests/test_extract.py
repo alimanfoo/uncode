@@ -112,17 +112,6 @@ class TestExtractModule:
         cls = result.classes[0]
         assert cls.attributes == ["items", "_cache", "count"]
 
-    def test_module_with_only_constants_is_kept(self, tmp_path):
-        src = tmp_path / "src"
-        pkg = src / "mypackage"
-        pkg.mkdir(parents=True)
-        (pkg / "__init__.py").write_text('__version__ = "1.0"\n')
-
-        modules = extract_modules(iter_source_files(src, project_root=tmp_path))
-
-        rel_paths = [m.rel_path for m in modules]
-        assert "src/mypackage/__init__.py" in rel_paths
-
     def test_annotated_attributes(self):
         source = textwrap.dedent("""\
             from dataclasses import dataclass
@@ -318,6 +307,13 @@ class TestExtractModules:
         modules = extract_modules(files)
 
         assert [m.rel_path for m in modules] == ["src/a.py", "src/b.py", "src/c.py"]
+
+    def test_module_with_only_constants_is_kept(self):
+        files = [('__version__ = "1.0"\n', "src/mypackage/__init__.py")]
+
+        modules = extract_modules(files)
+
+        assert [m.rel_path for m in modules] == ["src/mypackage/__init__.py"]
 
     def test_skips_files_with_no_symbols(self):
         files = [

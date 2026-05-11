@@ -29,9 +29,6 @@ class TestExtractModule:
     def test_unannotated_class_variable(self):
         ...
 
-    def test_module_with_only_constants_is_kept(self, tmp_path):
-        ...
-
     def test_annotated_attributes(self):
         ...
 
@@ -67,6 +64,9 @@ class TestExtractModules:
         ...
 
     def test_preserves_source_order(self):
+        ...
+
+    def test_module_with_only_constants_is_kept(self):
         ...
 
     def test_skips_files_with_no_symbols(self):
