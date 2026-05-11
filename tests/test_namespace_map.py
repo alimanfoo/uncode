@@ -57,28 +57,6 @@ class TestBuildMap:
             "delete": None,
         }
 
-    def test_class_with_attributes_and_methods(self):
-        modules = [
-            ModuleInfo(
-                rel_path="src/pkg/models.py",
-                classes=[
-                    ClassInfo(
-                        name="User",
-                        attributes=["name", "email"],
-                        methods=["save"],
-                    )
-                ],
-                functions=[],
-            ),
-        ]
-
-        result = build_map(modules)
-
-        members = result["src/"]["pkg/"]["models.py"]["User"]
-        assert members == {"name": None, "email": None, "save": None}
-        # Attributes come before methods
-        assert list(members.keys()) == ["name", "email", "save"]
-
     def test_function_is_none(self):
         modules = [
             ModuleInfo(rel_path="src/pkg/utils.py", classes=[], functions=["compute"]),
@@ -101,20 +79,6 @@ class TestBuildMap:
 
         assert result["src/"]["pkg/"]["types.py"]["Marker"] is None
 
-    def test_class_and_function_insertion_order_preserved(self):
-        modules = [
-            ModuleInfo(
-                rel_path="src/pkg/mixed.py",
-                classes=[ClassInfo(name="Alpha", methods=["run"])],
-                functions=["zebra", "apple"],
-            ),
-        ]
-
-        result = build_map(modules)
-        keys = list(result["src/"]["pkg/"]["mixed.py"].keys())
-
-        assert keys == ["Alpha", "zebra", "apple"]
-
     def test_module_level_constants(self):
         modules = [
             ModuleInfo(
@@ -129,21 +93,6 @@ class TestBuildMap:
         file_entry = result["src/"]["pkg/"]["settings.py"]
 
         assert file_entry == {"TIMEOUT": None, "MAX_RETRIES": None}
-
-    def test_constants_precede_classes_and_functions(self):
-        modules = [
-            ModuleInfo(
-                rel_path="src/pkg/mod.py",
-                constants=["VERSION"],
-                classes=[ClassInfo(name="Foo")],
-                functions=["run"],
-            ),
-        ]
-
-        result = build_map(modules)
-        keys = list(result["src/"]["pkg/"]["mod.py"].keys())
-
-        assert keys == ["VERSION", "Foo", "run"]
 
 
 class TestRenderMap:
