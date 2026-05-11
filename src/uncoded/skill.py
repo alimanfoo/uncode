@@ -117,8 +117,9 @@ interchangeably. Two classes called `UserRecord` and `AccountProfile` that
 model the same entity.
 
 Detection: scan the namespace for symbol clusters with verb or noun overlap.
-Where suspicion arises, spot-check the relevant stubs to confirm they overlap
-in meaning.
+Where suspicion arises, check the stub signatures and the source docstrings
+(via Serena's `find_symbol` with `include_body=True`) to confirm the
+candidates overlap in meaning.
 
 **Qualifier accretion.** Names carrying modifiers that are fossils of
 iteration: `_new`, `_v2`, `_updated`, `_legacy`, `_real`, `_proper`, `_final`,
@@ -140,8 +141,9 @@ with the rest of the codebase.
 subtly different meanings — visible as different signatures, different docstring
 content, or different domain associations.
 
-Detection: identify name collisions in the namespace, then examine the stubs to
-see whether the uses agree.
+Detection: identify name collisions in the namespace, then compare signatures
+(from the stubs) and docstrings (via Serena's `find_symbol` with
+`include_body=True`) to see whether the uses agree.
 
 ## Step 3: Promissory sweep
 
