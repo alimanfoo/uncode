@@ -54,7 +54,6 @@ class TestSetup:
         ...
 
 class TestRepoDogfooding:
-    """Catch drift between ``uncoded setup``'s templates and this repo's own config."""
 
     def test_repo_mcp_json_matches_template_contract(self):
         ...

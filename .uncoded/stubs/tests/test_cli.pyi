@@ -1,7 +1,5 @@
 # tests/test_cli.py
 
-"""End-to-end tests for the uncoded CLI."""
-
 import sys
 import textwrap
 from pathlib import Path
@@ -10,7 +8,6 @@ from uncoded import cli
 from uncoded.skill import SKILL_OUTPUTS
 
 def _init_repo(tmp_path, monkeypatch, source_roots):
-    """Set up a minimal repo: pyproject.toml + source root + chdir."""
     ...
 
 class TestSyncApplyMode:
