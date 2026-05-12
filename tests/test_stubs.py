@@ -155,7 +155,7 @@ class TestExtractStub:
         assert c.name == "MAX_RETRIES"
         assert c.annotation == "int"
         assert c.value_source == "3"
-        assert c.is_type_alias is False
+        assert c.is_pep695_alias is False
 
     def test_constant_unannotated_with_value(self):
         source = textwrap.dedent("""\
@@ -201,7 +201,7 @@ class TestExtractStub:
         assert c.name == "UserId"
         assert c.annotation == "TypeAlias"
         assert c.value_source == "int"
-        assert c.is_type_alias is False
+        assert c.is_pep695_alias is False
 
     def test_type_alias_pep695(self):
         source = textwrap.dedent("""\
@@ -210,7 +210,7 @@ class TestExtractStub:
         module = extract_stub(source, "pkg/mod.py")
         c = module.constants[0]
         assert c.name == "UserId"
-        assert c.is_type_alias is True
+        assert c.is_pep695_alias is True
         assert c.value_source == "int"
 
     def test_tuple_unpacking_skipped(self):
@@ -451,7 +451,7 @@ class TestRenderStub:
                 StubAssignment(
                     name="UserId",
                     value_source="int",
-                    is_type_alias=True,
+                    is_pep695_alias=True,
                 )
             ],
         )

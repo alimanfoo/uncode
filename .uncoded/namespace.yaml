@@ -78,7 +78,7 @@ src/:
         name:
         annotation:
         value_source:
-        is_type_alias:
+        is_pep695_alias:
       StubClass:
         name:
         bases:

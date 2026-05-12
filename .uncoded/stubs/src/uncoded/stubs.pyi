@@ -68,7 +68,7 @@ class StubAssignment:
     name: str
     annotation: str | None = None
     value_source: str | None = None
-    is_type_alias: bool = False
+    is_pep695_alias: bool = False
 
 class StubClass:
     name: str
