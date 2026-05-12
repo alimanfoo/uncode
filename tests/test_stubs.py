@@ -295,7 +295,7 @@ class TestRenderStub:
             imports=["import os", "from pathlib import Path"],
         )
         output = render_stub(module)
-        assert "import os\nfrom pathlib import Path" in output
+        assert "import os\nfrom pathlib import Path\n" in output
 
     def test_rendered_stub_has_no_line_range_comments(self):
         module = StubModule(
@@ -485,6 +485,9 @@ class TestRenderStub:
 
             async def fetch(url: str) -> bytes:
                 return b""
+
+            def build(*args: str, **kwargs: int) -> None:
+                pass
 
             class Record:
                 name: str
