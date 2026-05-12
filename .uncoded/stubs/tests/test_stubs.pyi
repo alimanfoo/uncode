@@ -95,9 +95,6 @@ class TestRenderStub:
     def test_class_with_bases(self):
         ...
 
-    def test_class_no_bases(self):
-        ...
-
     def test_class_with_no_members_renders_body(self):
         ...
 
@@ -129,6 +126,9 @@ class TestRenderStub:
         ...
 
     def test_unannotated_class_attribute_rendered(self):
+        ...
+
+    def test_renders_valid_python_for_representative_source(self):
         ...
 
 class TestBuildStubs:
