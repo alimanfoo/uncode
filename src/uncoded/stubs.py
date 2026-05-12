@@ -43,7 +43,7 @@ class StubAssignment:
     name: str
     annotation: str | None = None
     value_source: str | None = None
-    is_type_alias: bool = False
+    is_pep695_alias: bool = False
 
 
 @dataclass
@@ -124,7 +124,7 @@ def _extract_assignment(
         return StubAssignment(
             name=node.name.id,
             value_source=_render_value(node.value),
-            is_type_alias=True,
+            is_pep695_alias=True,
         )
 
     if isinstance(node, ast.AnnAssign):
@@ -167,7 +167,6 @@ def _property_attribute(
         name=node.name,
         annotation=ast.unparse(node.returns) if node.returns else None,
         value_source=None,
-        is_type_alias=False,
     )
 
 
@@ -250,7 +249,7 @@ def _render_function(func: StubFunction, indent: str = "") -> list[str]:
 
 def _format_assignment_body(a: StubAssignment) -> str:
     """Render the 'name [: type] [= value]' portion of an assignment."""
-    if a.is_type_alias:
+    if a.is_pep695_alias:
         return f"type {a.name} = {a.value_source}"
     head = f"{a.name}: {a.annotation}" if a.annotation else a.name
     if a.value_source is None:
