@@ -442,7 +442,7 @@ class TestRenderStub:
             constants=[StubAssignment(name="FOO", annotation="int")],
         )
         output = render_stub(module)
-        assert "FOO: int" in output
+        assert "FOO: int\n" in output
         assert "FOO: int = " not in output
 
     def test_type_alias_pep695_rendered(self):
