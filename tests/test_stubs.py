@@ -112,8 +112,10 @@ class TestExtractStub:
         """)
         module = extract_stub(source, "pkg/build.py")
         f = module.functions[0]
-        assert StubParam("*args", "str") in f.params
-        assert StubParam("**kwargs", "int") in f.params
+        assert f.params == [
+            StubParam("*args", "str"),
+            StubParam("**kwargs", "int"),
+        ]
 
     def test_imports_collected(self):
         source = textwrap.dedent("""\
