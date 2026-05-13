@@ -379,6 +379,13 @@ class TestRenderStub:
         )
         assert expected in render_stub(module)
 
+    def test_return_annotation_rendered(self):
+        module = StubModule(
+            rel_path="pkg/mod.py",
+            functions=[StubFunction(name="f", return_annotation="str")],
+        )
+        assert "def f() -> str:" in render_stub(module)
+
     def test_class_with_bases(self):
         module = StubModule(
             rel_path="pkg/mod.py",

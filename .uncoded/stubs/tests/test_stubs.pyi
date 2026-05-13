@@ -92,6 +92,9 @@ class TestRenderStub:
     def test_render_param_covers_input_kind(self, params, expected):
         ...
 
+    def test_return_annotation_rendered(self):
+        ...
+
     def test_class_with_bases(self):
         ...
 
