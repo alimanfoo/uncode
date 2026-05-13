@@ -133,22 +133,22 @@ class TestExtractStub:
             pytest.param(
                 "def f(*args): pass\n",
                 [StubParam("*args")],
-                id="vararg_bare",
+                id="varargs_bare",
             ),
             pytest.param(
                 "def f(*args: str): pass\n",
                 [StubParam("*args", "str")],
-                id="vararg_annotated",
+                id="varargs_annotated",
             ),
             pytest.param(
                 "def f(**kwargs): pass\n",
                 [StubParam("**kwargs")],
-                id="kwarg_bare",
+                id="kwargs_bare",
             ),
             pytest.param(
                 "def f(**kwargs: int): pass\n",
                 [StubParam("**kwargs", "int")],
-                id="kwarg_annotated",
+                id="kwargs_annotated",
             ),
             pytest.param(
                 "def f(x, /): pass\n",
