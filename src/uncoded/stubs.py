@@ -166,7 +166,6 @@ def _property_attribute(
     return StubAssignment(
         name=node.name,
         annotation=ast.unparse(node.returns) if node.returns else None,
-        value_source=None,
     )
 
 
