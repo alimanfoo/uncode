@@ -11,6 +11,11 @@ src/:
   uncoded/:
     __init__.py:
       __version__:
+    body.py:
+      BodyNotFound:
+      resolve_body:
+      _resolve_class_member:
+      _extract_body:
     cli.py:
       _sync:
       main:
@@ -109,6 +114,30 @@ src/:
       sync_file:
       remove_file:
 tests/:
+  test_body.py:
+    TestResolveBodyTopLevel:
+      test_function_without_decorators:
+      test_function_with_decorators:
+      test_async_function:
+      test_class_whole_body:
+      test_module_constant_annotated:
+      test_module_constant_unannotated:
+      test_pep695_type_alias:
+      test_overload_returns_last_definition:
+      test_scans_past_non_matching_constant:
+      test_not_found_raises_body_not_found:
+      test_file_not_found_propagates:
+      test_syntax_error_propagates:
+    TestResolveBodyClassMember:
+      test_method:
+      test_property_returns_getter_body:
+      test_class_attribute_annotated:
+      test_class_attribute_unannotated:
+      test_scans_past_non_matching_attribute:
+      test_skips_non_function_nodes_in_class:
+      test_not_found_in_class:
+    TestResolveBodyByteIdentical:
+      test_exact_source_returned:
   test_cli.py:
     TestSyncApplyMode:
       test_writes_namespace_map_stubs_and_instruction_file:

@@ -1,0 +1,258 @@
+import textwrap
+
+import pytest
+
+from uncoded.body import BodyNotFound, resolve_body
+
+
+class TestResolveBodyTopLevel:
+    def test_function_without_decorators(self, tmp_path):
+        source = textwrap.dedent("""\
+            def foo():
+                return 42
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("foo", path)
+
+        assert result == "def foo():\n    return 42\n"
+
+    def test_function_with_decorators(self, tmp_path):
+        source = textwrap.dedent("""\
+            import functools
+
+            @functools.cache
+            def compute():
+                return 1
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("compute", path)
+
+        assert result == "@functools.cache\ndef compute():\n    return 1\n"
+
+    def test_async_function(self, tmp_path):
+        source = textwrap.dedent("""\
+            async def fetch():
+                return 0
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("fetch", path)
+
+        assert result == "async def fetch():\n    return 0\n"
+
+    def test_class_whole_body(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Engine:
+                speed: int = 0
+
+                def run(self):
+                    pass
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("Engine", path)
+
+        assert result == source
+
+    def test_module_constant_annotated(self, tmp_path):
+        source = textwrap.dedent("""\
+            MAX: int = 100
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("MAX", path)
+
+        assert result == "MAX: int = 100\n"
+
+    def test_module_constant_unannotated(self, tmp_path):
+        source = textwrap.dedent("""\
+            TIMEOUT = 30
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("TIMEOUT", path)
+
+        assert result == "TIMEOUT = 30\n"
+
+    def test_pep695_type_alias(self, tmp_path):
+        source = textwrap.dedent("""\
+            type UserId = int
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("UserId", path)
+
+        assert result == "type UserId = int\n"
+
+    def test_overload_returns_last_definition(self, tmp_path):
+        source = textwrap.dedent("""\
+            from typing import overload
+
+            @overload
+            def process(x: int) -> int: ...
+
+            @overload
+            def process(x: str) -> str: ...
+
+            def process(x):
+                return x
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("process", path)
+
+        assert result == "def process(x):\n    return x\n"
+
+    def test_scans_past_non_matching_constant(self, tmp_path):
+        source = textwrap.dedent("""\
+            OTHER = 1
+
+            def foo():
+                return 42
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("foo", path)
+
+        assert result == "def foo():\n    return 42\n"
+
+    def test_not_found_raises_body_not_found(self, tmp_path):
+        path = tmp_path / "m.py"
+        path.write_text("def other(): pass\n")
+
+        with pytest.raises(BodyNotFound, match="missing"):
+            resolve_body("missing", path)
+
+    def test_file_not_found_propagates(self, tmp_path):
+        path = tmp_path / "nonexistent.py"
+
+        with pytest.raises(FileNotFoundError):
+            resolve_body("foo", path)
+
+    def test_syntax_error_propagates(self, tmp_path):
+        path = tmp_path / "m.py"
+        path.write_text("def broken(:\n")
+
+        with pytest.raises(SyntaxError):
+            resolve_body("broken", path)
+
+
+class TestResolveBodyClassMember:
+    def test_method(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Dog:
+                def bark(self):
+                    print("woof")
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("Dog/bark", path)
+
+        assert result == '    def bark(self):\n        print("woof")\n'
+
+    def test_property_returns_getter_body(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Config:
+                @property
+                def path(self):
+                    return self._path
+
+                @path.setter
+                def path(self, value):
+                    self._path = value
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("Config/path", path)
+
+        expected = "    @property\n    def path(self):\n        return self._path\n"
+        assert result == expected
+
+    def test_class_attribute_annotated(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Counter:
+                count: int = 0
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("Counter/count", path)
+
+        assert result == "    count: int = 0\n"
+
+    def test_class_attribute_unannotated(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Config:
+                debug = False
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("Config/debug", path)
+
+        assert result == "    debug = False\n"
+
+    def test_scans_past_non_matching_attribute(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Config:
+                debug = False
+                timeout = 30
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("Config/timeout", path)
+
+        assert result == "    timeout = 30\n"
+
+    def test_skips_non_function_nodes_in_class(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Documented:
+                \"\"\"A docstring.\"\"\"
+
+                def method(self):
+                    pass
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("Documented/method", path)
+
+        assert result == "    def method(self):\n        pass\n"
+
+    def test_not_found_in_class(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Foo:
+                def bar(self):
+                    pass
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        with pytest.raises(BodyNotFound, match="missing"):
+            resolve_body("Foo/missing", path)
+
+
+class TestResolveBodyByteIdentical:
+    def test_exact_source_returned(self, tmp_path):
+        body = "def compute(x: int) -> int:\n    result = x * 2\n    return result\n"
+        source = f"# header\n\n{body}\n# footer\n"
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("compute", path)
+
+        assert result == body
