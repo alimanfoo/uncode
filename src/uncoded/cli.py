@@ -138,6 +138,12 @@ def _sync(*, start: Path | None = None, check: bool = False) -> int:
 
 
 def _body(*, name_path: str, in_path: str) -> int:
+    """Print the source body of name_path in in_path to stdout.
+
+    Returns 0 on success. Returns 1 if no pyproject.toml is found, if
+    name_path is not present in the file, if the file does not exist,
+    or if the file has a syntax error.
+    """
     project_root = _find_project_root(start=Path.cwd())
     if project_root is None:
         return 1
@@ -145,8 +151,8 @@ def _body(*, name_path: str, in_path: str) -> int:
     target = project_root / in_path
     try:
         body = resolve_body(name_path, target)
-    except BodyNotFound as e:
-        print(f"Error: {e}", file=sys.stderr)
+    except BodyNotFound:
+        print(f"Error: {name_path!r} not found in {in_path}", file=sys.stderr)
         return 1
     except FileNotFoundError:
         print(f"Error: {in_path}: file not found.", file=sys.stderr)
