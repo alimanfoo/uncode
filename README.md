@@ -223,7 +223,7 @@ To run a subset of tests without the coverage gate:
 uv run pytest tests/test_stubs.py --no-cov
 ```
 
-Run all checks (the same suite CI runs):
+Run the same checks CI's lint job runs:
 
 ```
 uv run pre-commit run --all-files
