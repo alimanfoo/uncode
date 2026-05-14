@@ -123,7 +123,7 @@ its signature from the stub:
 uncoded body <name_path> --in <relative_path>
 ```
 
-`name_path` follows Serena convention: one segment (`fn`) for a top-level
+`name_path` is a slash-separated path: one segment (`fn`) for a top-level
 symbol, two for a class member (`Class/method`). `--in` is the source file's
 path relative to the project root. The command prints the source text of the
 symbol to stdout, byte-identical to what's on disk — no reformatting, no

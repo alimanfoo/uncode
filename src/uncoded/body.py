@@ -13,8 +13,9 @@ class BodyNotFound(Exception):
 def resolve_body(name_path: str, in_path: Path) -> str:
     """Return the source text for the symbol named by name_path in in_path.
 
-    name_path follows Serena convention: one segment for a top-level symbol,
-    two segments (Class/member) for a class method, property, or attribute.
+    name_path is a slash-separated path: a single segment names a top-level
+    symbol; two segments name a class member as Class/member (a method,
+    property, or attribute).
     Raises BodyNotFound if the symbol is not present. Lets FileNotFoundError
     propagate if in_path does not exist, and SyntaxError if in_path cannot
     be parsed.
