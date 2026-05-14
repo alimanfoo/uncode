@@ -1,0 +1,74 @@
+# tests/test_body.py
+
+import textwrap
+import pytest
+from uncoded.body import BodyNotFound, resolve_body
+
+class TestResolveBodyTopLevel:
+    def test_function_without_decorators(self, tmp_path):
+        ...
+
+    def test_function_with_decorators(self, tmp_path):
+        ...
+
+    def test_async_function(self, tmp_path):
+        ...
+
+    def test_class_whole_body(self, tmp_path):
+        ...
+
+    def test_module_constant_annotated(self, tmp_path):
+        ...
+
+    def test_module_constant_unannotated(self, tmp_path):
+        ...
+
+    def test_pep695_type_alias(self, tmp_path):
+        ...
+
+    def test_overload_returns_last_definition(self, tmp_path):
+        ...
+
+    def test_scans_past_non_matching_constant(self, tmp_path):
+        ...
+
+    def test_not_found_raises_body_not_found(self, tmp_path):
+        ...
+
+    def test_file_not_found_propagates(self, tmp_path):
+        ...
+
+    def test_syntax_error_propagates(self, tmp_path):
+        ...
+
+class TestResolveBodyClassMember:
+    def test_method(self, tmp_path):
+        ...
+
+    def test_property_returns_getter_body(self, tmp_path):
+        ...
+
+    def test_class_attribute_annotated(self, tmp_path):
+        ...
+
+    def test_class_attribute_unannotated(self, tmp_path):
+        ...
+
+    def test_scans_past_non_matching_attribute(self, tmp_path):
+        ...
+
+    def test_skips_non_function_nodes_in_class(self, tmp_path):
+        ...
+
+    def test_shadowed_class_member_found_in_last_definition(self, tmp_path):
+        ...
+
+    def test_shadowed_class_member_not_found_in_last_definition(self, tmp_path):
+        ...
+
+    def test_not_found_in_class(self, tmp_path):
+        ...
+
+class TestResolveBodyByteIdentical:
+    def test_exact_source_returned(self, tmp_path):
+        ...

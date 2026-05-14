@@ -4,6 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from uncoded.body import BodyNotFound, resolve_body
 from uncoded.config import (
     find_pyproject_toml,
     read_instruction_files,
@@ -16,6 +17,23 @@ from uncoded.serena_setup import setup
 from uncoded.skill import sync_skill
 from uncoded.stubs import build_stubs
 from uncoded.sync import sync_file
+
+
+def _find_project_root(*, start: Path) -> Path | None:
+    """Return the project root for start, or None if no pyproject.toml is found.
+
+    Prints the error message to stderr before returning None so the caller
+    only needs to check the return value and return 1.
+    """
+    pyproject_path = find_pyproject_toml(start)
+    if pyproject_path is None:
+        print(
+            "Error: No pyproject.toml found. "
+            "Create one with a [tool.uncoded] source-roots entry.",
+            file=sys.stderr,
+        )
+        return None
+    return pyproject_path.parent
 
 
 def _sync(*, start: Path | None = None, check: bool = False) -> int:
@@ -36,18 +54,12 @@ def _sync(*, start: Path | None = None, check: bool = False) -> int:
     if start is None:
         start = Path.cwd()
 
-    pyproject_path = find_pyproject_toml(start)
-    if pyproject_path is None:
-        print(
-            "Error: No pyproject.toml found. "
-            "Create one with a [tool.uncoded] source-roots entry.",
-            file=sys.stderr,
-        )
+    project_root = _find_project_root(start=start)
+    if project_root is None:
         return 1
-    project_root = pyproject_path.parent
 
     try:
-        configured_roots = read_source_roots(pyproject_path)
+        configured_roots = read_source_roots(project_root / "pyproject.toml")
     except LookupError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -125,14 +137,45 @@ def _sync(*, start: Path | None = None, check: bool = False) -> int:
     return 0
 
 
+def _body(*, name_path: str, in_path: str) -> int:
+    """Print the source body of name_path in in_path to stdout.
+
+    Returns 0 on success. Returns 1 if no pyproject.toml is found, if
+    name_path is not present in the file, if the file does not exist,
+    or if the file has a syntax error.
+    """
+    project_root = _find_project_root(start=Path.cwd())
+    if project_root is None:
+        return 1
+
+    target = project_root / in_path
+    try:
+        body = resolve_body(name_path, target)
+    except BodyNotFound:
+        print(f"Error: {name_path!r} not found in {in_path}", file=sys.stderr)
+        return 1
+    except FileNotFoundError:
+        print(f"Error: {in_path}: file not found.", file=sys.stderr)
+        return 1
+    except SyntaxError as e:
+        print(f"Error: {in_path}: {e}", file=sys.stderr)
+        return 1
+
+    sys.stdout.write(body)
+    return 0
+
+
 def main() -> int:
     """Dispatch the uncoded CLI.
 
-    Three subcommands: ``sync`` builds or refreshes the navigation index;
-    ``check`` verifies the index matches what a rebuild would produce
-    (exits non-zero on drift, useful in CI); ``setup`` generates
-    MCP and Claude Code config for the recommended Serena + ty LSP
-    integration.
+    Four subcommands:
+
+    - ``sync`` — builds or refreshes the navigation index.
+    - ``check`` — verifies the index matches what a rebuild would produce;
+      exits non-zero on drift, useful in CI.
+    - ``setup`` — generates MCP and Claude Code config for the recommended
+      Serena + ty LSP integration.
+    - ``body`` — prints the source body of a named symbol to stdout.
 
     Each subparser binds its own ``action`` callable via
     ``set_defaults``; ``main`` then dispatches via ``args.action()``.
@@ -172,6 +215,25 @@ def main() -> int:
         ),
     )
     setup_parser.set_defaults(action=lambda: setup())
+
+    body_parser = subparsers.add_parser(
+        "body",
+        help="Print the source body of a named symbol to stdout.",
+    )
+    body_parser.add_argument(
+        "name_path",
+        help="Symbol path: one segment for top-level, two for Class/member.",
+    )
+    body_parser.add_argument(
+        "--in",
+        dest="in_path",
+        required=True,
+        metavar="PATH",
+        help="Source file path relative to the project root.",
+    )
+    body_parser.set_defaults(
+        action=lambda: _body(name_path=args.name_path, in_path=args.in_path)
+    )
 
     args = parser.parse_args()
     return args.action()

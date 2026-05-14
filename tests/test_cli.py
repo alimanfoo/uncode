@@ -430,3 +430,74 @@ class TestMainDispatch:
         monkeypatch.setattr(sys, "argv", ["uncoded", "nonsense"])
         with pytest.raises(SystemExit):
             cli.main()
+
+
+class TestBodyCommand:
+    def test_happy_path_dispatch(self, tmp_path, monkeypatch, capsys):
+        _init_repo(tmp_path, monkeypatch)
+        (tmp_path / "src" / "foo.py").write_text("def fn():\n    pass\n")
+        argv = ["uncoded", "body", "fn", "--in", "src/foo.py"]
+        monkeypatch.setattr(sys, "argv", argv)
+
+        assert cli.main() == 0
+        assert capsys.readouterr().out == "def fn():\n    pass\n"
+
+    def test_class_method_form(self, tmp_path, monkeypatch, capsys):
+        _init_repo(tmp_path, monkeypatch)
+        (tmp_path / "src" / "foo.py").write_text(
+            "class Dog:\n    def bark(self):\n        pass\n"
+        )
+
+        assert cli._body(name_path="Dog/bark", in_path="src/foo.py") == 0
+        assert capsys.readouterr().out == "    def bark(self):\n        pass\n"
+
+    def test_symbol_not_found_exits_one(self, tmp_path, monkeypatch, capsys):
+        _init_repo(tmp_path, monkeypatch)
+        (tmp_path / "src" / "foo.py").write_text("def other(): pass\n")
+
+        assert cli._body(name_path="missing", in_path="src/foo.py") == 1
+
+        err = capsys.readouterr().err
+        assert "missing" in err
+        assert "foo.py" in err
+
+    def test_file_not_found_exits_one(self, tmp_path, monkeypatch, capsys):
+        _init_repo(tmp_path, monkeypatch)
+
+        assert cli._body(name_path="fn", in_path="src/nonexistent.py") == 1
+        assert "nonexistent.py" in capsys.readouterr().err
+
+    def test_syntax_error_exits_one(self, tmp_path, monkeypatch, capsys):
+        _init_repo(tmp_path, monkeypatch)
+        (tmp_path / "src" / "foo.py").write_text("def broken(:\n")
+
+        assert cli._body(name_path="broken", in_path="src/foo.py") == 1
+        assert "foo.py" in capsys.readouterr().err
+
+    def test_no_pyproject_toml_exits_one(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+
+        assert cli._body(name_path="fn", in_path="src/foo.py") == 1
+        assert "No pyproject.toml found" in capsys.readouterr().err
+
+    def test_stdout_is_exact_body(self, tmp_path, monkeypatch, capsys):
+        _init_repo(tmp_path, monkeypatch)
+        body = "def compute(x: int) -> int:\n    return x * 2\n"
+        source = f"# header\n\n{body}\n# footer\n"
+        (tmp_path / "src" / "foo.py").write_text(source)
+
+        assert cli._body(name_path="compute", in_path="src/foo.py") == 0
+
+        out, err = capsys.readouterr()
+        assert out == body
+        assert err == ""
+
+    def test_missing_in_flag_exits_with_two(self, tmp_path, monkeypatch, capsys):
+        _init_repo(tmp_path, monkeypatch)
+        monkeypatch.setattr(sys, "argv", ["uncoded", "body", "fn"])
+
+        with pytest.raises(SystemExit) as exc:
+            cli.main()
+
+        assert exc.value.code == 2
+        assert capsys.readouterr().err != ""
