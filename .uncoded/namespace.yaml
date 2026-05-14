@@ -17,6 +17,7 @@ src/:
       _resolve_class_member:
       _extract_body:
     cli.py:
+      _find_project_root:
       _sync:
       main:
     config.py:

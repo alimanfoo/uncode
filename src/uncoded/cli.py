@@ -18,6 +18,23 @@ from uncoded.stubs import build_stubs
 from uncoded.sync import sync_file
 
 
+def _find_project_root(*, start: Path) -> Path | None:
+    """Return the project root for start, or None if no pyproject.toml is found.
+
+    Prints the error message to stderr before returning None so the caller
+    only needs to check the return value and return 1.
+    """
+    pyproject_path = find_pyproject_toml(start)
+    if pyproject_path is None:
+        print(
+            "Error: No pyproject.toml found. "
+            "Create one with a [tool.uncoded] source-roots entry.",
+            file=sys.stderr,
+        )
+        return None
+    return pyproject_path.parent
+
+
 def _sync(*, start: Path | None = None, check: bool = False) -> int:
     """Sync (or verify) the namespace map, stub files, and instruction-file sections.
 
@@ -36,18 +53,12 @@ def _sync(*, start: Path | None = None, check: bool = False) -> int:
     if start is None:
         start = Path.cwd()
 
-    pyproject_path = find_pyproject_toml(start)
-    if pyproject_path is None:
-        print(
-            "Error: No pyproject.toml found. "
-            "Create one with a [tool.uncoded] source-roots entry.",
-            file=sys.stderr,
-        )
+    project_root = _find_project_root(start=start)
+    if project_root is None:
         return 1
-    project_root = pyproject_path.parent
 
     try:
-        configured_roots = read_source_roots(pyproject_path)
+        configured_roots = read_source_roots(project_root / "pyproject.toml")
     except LookupError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1

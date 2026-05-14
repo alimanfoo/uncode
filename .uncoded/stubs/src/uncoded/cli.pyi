@@ -12,6 +12,9 @@ from uncoded.skill import sync_skill
 from uncoded.stubs import build_stubs
 from uncoded.sync import sync_file
 
+def _find_project_root(*, start: Path) -> Path | None:
+    ...
+
 def _sync(*, start: Path | None, check: bool) -> int:
     ...
 
