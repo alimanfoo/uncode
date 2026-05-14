@@ -29,15 +29,13 @@ def resolve_body(name_path: str, in_path: Path) -> str:
     match: ast.stmt | None = None
 
     for node in ast.iter_child_nodes(tree):
-        if (
-            isinstance(node, ast.ClassDef)
+        matches_class = isinstance(node, ast.ClassDef) and node.name == head
+        matches_function = (
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and tail is None
             and node.name == head
-            or (
-                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-                and tail is None
-                and node.name == head
-            )
-        ):
+        )
+        if matches_class or matches_function:
             match = node
         elif isinstance(node, (ast.Assign, ast.AnnAssign)) and tail is None:
             name = _assign_target_name(node)
