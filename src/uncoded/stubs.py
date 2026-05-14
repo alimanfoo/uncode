@@ -119,8 +119,6 @@ def _extract_assignment(
     unpacking or attribute assignment), which we can't represent cleanly.
     """
     if isinstance(node, ast.TypeAlias):
-        if not isinstance(node.name, ast.Name):
-            return None
         return StubAssignment(
             name=node.name.id,
             value_source=_render_value(node.value),
