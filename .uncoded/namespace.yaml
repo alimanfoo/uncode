@@ -135,6 +135,8 @@ tests/:
       test_class_attribute_unannotated:
       test_scans_past_non_matching_attribute:
       test_skips_non_function_nodes_in_class:
+      test_shadowed_class_member_found_in_last_definition:
+      test_shadowed_class_member_not_found_in_last_definition:
       test_not_found_in_class:
     TestResolveBodyByteIdentical:
       test_exact_source_returned:

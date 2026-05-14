@@ -29,21 +29,14 @@ def resolve_body(name_path: str, in_path: Path) -> str:
     match: ast.stmt | None = None
 
     for node in ast.iter_child_nodes(tree):
-        if isinstance(node, ast.ClassDef) and node.name == head:
-            if tail is None:
-                match = node
-            else:
-                return _resolve_class_member(
-                    name_path=name_path,
-                    in_path=in_path,
-                    class_node=node,
-                    member_name=tail,
-                    lines=lines,
-                )
-        elif (
-            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-            and tail is None
+        if (
+            isinstance(node, ast.ClassDef)
             and node.name == head
+            or (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and tail is None
+                and node.name == head
+            )
         ):
             match = node
         elif isinstance(node, (ast.Assign, ast.AnnAssign)) and tail is None:
@@ -55,6 +48,15 @@ def resolve_body(name_path: str, in_path: Path) -> str:
 
     if match is None:
         raise BodyNotFound(f"{name_path!r} not found in {in_path}")
+
+    if tail is not None and isinstance(match, ast.ClassDef):
+        return _resolve_class_member(
+            name_path=name_path,
+            in_path=in_path,
+            class_node=match,
+            member_name=tail,
+            lines=lines,
+        )
 
     return _extract_body(node=match, lines=lines)
 

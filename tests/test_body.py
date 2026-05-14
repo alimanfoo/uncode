@@ -233,6 +233,39 @@ class TestResolveBodyClassMember:
 
         assert result == "    def method(self):\n        pass\n"
 
+    def test_shadowed_class_member_found_in_last_definition(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Foo:
+                def first_only(self):
+                    pass
+
+            class Foo:
+                def second_only(self):
+                    pass
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        result = resolve_body("Foo/second_only", path)
+
+        assert result == "    def second_only(self):\n        pass\n"
+
+    def test_shadowed_class_member_not_found_in_last_definition(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Foo:
+                def first_only(self):
+                    pass
+
+            class Foo:
+                def second_only(self):
+                    pass
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        with pytest.raises(BodyNotFound, match="first_only"):
+            resolve_body("Foo/first_only", path)
+
     def test_not_found_in_class(self, tmp_path):
         source = textwrap.dedent("""\
             class Foo:
