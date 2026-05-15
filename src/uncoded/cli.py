@@ -228,7 +228,7 @@ def main() -> int:
         dest="in_path",
         required=True,
         metavar="PATH",
-        help="Source file path.",
+        help="Source file path (relative to current directory).",
     )
     body_parser.set_defaults(
         action=lambda: _body(name_path=args.name_path, in_path=args.in_path)

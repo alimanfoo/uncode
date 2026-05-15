@@ -474,6 +474,13 @@ class TestBodyCommand:
         assert cli._body(name_path="broken", in_path="src/foo.py") == 1
         assert "foo.py" in capsys.readouterr().err
 
+    def test_works_without_project_root(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "m.py").write_text("def fn():\n    pass\n")
+
+        assert cli._body(name_path="fn", in_path="m.py") == 0
+        assert capsys.readouterr().out == "def fn():\n    pass\n"
+
     def test_in_path_resolves_relative_to_cwd(self, tmp_path, monkeypatch, capsys):
         _init_repo(tmp_path, monkeypatch)
         (tmp_path / "src" / "foo.py").write_text("def fn():\n    pass\n")

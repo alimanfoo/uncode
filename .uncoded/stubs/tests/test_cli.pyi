@@ -98,6 +98,9 @@ class TestBodyCommand:
     def test_syntax_error_exits_one(self, tmp_path, monkeypatch, capsys):
         ...
 
+    def test_works_without_project_root(self, tmp_path, monkeypatch, capsys):
+        ...
+
     def test_in_path_resolves_relative_to_cwd(self, tmp_path, monkeypatch, capsys):
         ...
 

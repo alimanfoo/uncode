@@ -37,9 +37,8 @@ def resolve_body(name_path: str, in_path: Path) -> str:
     source = in_path.read_text()
     tree = ast.parse(source, filename=str(in_path))
     lines = source.splitlines(keepends=True)
-    segments = name_path.split("/", maxsplit=1)
-    head = segments[0]
-    tail = segments[1] if len(segments) == 2 else None
+    head = all_segments[0]
+    tail = all_segments[1] if len(all_segments) == 2 else None
 
     match: ast.stmt | None = None
 

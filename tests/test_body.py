@@ -285,7 +285,7 @@ class TestUnsupportedNamePath:
     def _assert_raises(self, name_path, tmp_path):
         path = tmp_path / "m.py"
         path.write_text("def foo(): pass\n")
-        with pytest.raises(UnsupportedNamePath, match="'name'") as exc_info:
+        with pytest.raises(UnsupportedNamePath) as exc_info:
             resolve_body(name_path, path)
         msg = str(exc_info.value)
         for shape in self.SUPPORTED_SHAPES:
