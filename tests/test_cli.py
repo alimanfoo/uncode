@@ -492,6 +492,17 @@ class TestBodyCommand:
         assert out == body
         assert err == ""
 
+    def test_unsupported_name_path_exits_one(self, tmp_path, monkeypatch, capsys):
+        _init_repo(tmp_path, monkeypatch)
+        (tmp_path / "src" / "foo.py").write_text("def fn(): pass\n")
+
+        assert cli._body(name_path="A/B/C", in_path="src/foo.py") == 1
+
+        err = capsys.readouterr().err
+        assert "Error:" in err
+        assert "'name'" in err
+        assert "'Class/member'" in err
+
     def test_missing_in_flag_exits_with_two(self, tmp_path, monkeypatch, capsys):
         _init_repo(tmp_path, monkeypatch)
         monkeypatch.setattr(sys, "argv", ["uncoded", "body", "fn"])

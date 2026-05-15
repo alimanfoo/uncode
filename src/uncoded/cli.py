@@ -4,7 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from uncoded.body import BodyNotFound, resolve_body
+from uncoded.body import BodyNotFound, UnsupportedNamePath, resolve_body
 from uncoded.config import (
     find_pyproject_toml,
     read_instruction_files,
@@ -151,6 +151,9 @@ def _body(*, name_path: str, in_path: str) -> int:
     target = project_root / in_path
     try:
         body = resolve_body(name_path, target)
+    except UnsupportedNamePath as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
     except BodyNotFound:
         print(f"Error: {name_path!r} not found in {in_path}", file=sys.stderr)
         return 1
