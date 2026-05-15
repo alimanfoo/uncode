@@ -11,6 +11,9 @@ src/:
   uncoded/:
     __init__.py:
       __version__:
+    ast_helpers.py:
+      property_kind:
+      assign_target_name:
     body.py:
       BodyNotFound:
       resolve_body:
@@ -36,8 +39,6 @@ src/:
         constants:
         classes:
         functions:
-      property_kind:
-      _assign_target_name:
       extract_module:
       iter_source_files:
       extract_modules:
