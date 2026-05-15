@@ -116,10 +116,10 @@ source means reading many lines to learn what the stub would have told
 you in one. If no stub exists at the expected path, the file has no
 symbols indexed; in that narrow case, read source directly.
 
-**Step 3 — Act. Use `uncoded body` to read a symbol's body; use Serena to find,
+**Step 3 — Act. Use `uncoded body` to read a symbol's body; use Serena to find callers,
 rename, edit, and delete symbols.**
 With the map and stub loaded, you have the exact `relative_path` and
-`name_path` each Serena tool needs (`ClassName/method` for a method,
+`name_path` each tool needs (`ClassName/method` for a method,
 `function_name` for a top-level function). Per task:
 
 - **Read a symbol's body.** `uncoded body <name_path> --in <relative_path>` —
@@ -173,6 +173,6 @@ non-Serena tools stay correct:
 - Environments where Serena is unavailable, or the rare stub-less
   Python file that needs exploratory reading.
 
-The dispatch rule turns on the search term: a symbol name → Serena; a
+The dispatch rule turns on the search term: a symbol name → the index; a
 regex or free-text phrase → grep.
 <!-- uncoded:end -->
