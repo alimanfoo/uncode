@@ -83,6 +83,7 @@ SERENA_PROJECT_FIELDS = {
     "ignored_paths": [".uncoded"],
     "excluded_tools": [
         "execute_shell_command",
+        "find_symbol",
         "list_memories",
         "read_memory",
         "write_memory",
