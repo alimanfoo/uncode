@@ -26,10 +26,10 @@ Two-level index:
    imports, full signatures (parameter names, types, return types),
    module constants, and class attributes.
 
-Alongside the index, uncoded also ships a one-shot setup for a language
-server, so agents can find references, rename, and safely delete symbols
-by name rather than via grep and text edits. See "How to read and edit
-code in this codebase" below for the dispatch rule.
+Alongside the index, uncoded ships `uncoded body` to read symbol bodies and
+`uncoded refs` to list all call sites, plus a one-shot language-server setup
+so agents can rename and safely delete symbols by name. See "How to read and
+edit code in this codebase" below for the dispatch rule.
 
 ## Commands
 
@@ -61,10 +61,10 @@ uv run pytest tests/test_stubs.py --no-cov
 ## How to read and edit code in this codebase
 
 This repo uses [uncoded](https://github.com/alimanfoo/uncoded) to maintain
-a symbol index over its source code, with two peer tools over that index:
-`uncoded body` for reading a symbol's body, and
-[Serena](https://github.com/oraios/serena) for cross-symbol operations —
-finding references, renaming, editing by symbol, and safe-deleting.
+a symbol index over its source code, with three tools over that index:
+`uncoded body` for reading a symbol's body, `uncoded refs` for finding
+references, and [Serena](https://github.com/oraios/serena) for cross-symbol
+operations — renaming, editing by symbol, and safe-deleting.
 The point of this scaffolding is one rule.
 
 ### The dispatch rule
@@ -78,7 +78,7 @@ just the first one in the session. The pretrained reflex for "find X" is
 grep, and that reflex is wrong here. `grep -rn 'def resolve_body'` to read a
 function's body is the rule firing — that is `uncoded body`. `grep -rn
 'function_name'` to check whether something has callers before a refactor is
-the rule firing — that is `find_referencing_symbols`. `grep` then `Edit` to
+the rule firing — that is `uncoded refs`. `grep` then `Edit` to
 delete dead code is the rule firing — that is `safe_delete_symbol`. The grep
 version of any of these is noisier and less reliable: grep matches comments,
 strings, and unrelated attributes; grep misses re-exports (so caller and
@@ -118,8 +118,8 @@ source means reading many lines to learn what the stub would have told
 you in one. If no stub exists at the expected path, the file has no
 symbols indexed; in that narrow case, read source directly.
 
-**Step 3 — Act. Use `uncoded body` to read a symbol's body; use Serena to find callers,
-rename, edit, and delete symbols.**
+**Step 3 — Act. Use `uncoded body` to read a symbol's body; use `uncoded refs` to find
+callers; use Serena to rename, edit, and delete symbols.**
 With the map and stub loaded, you have the exact `relative_path` and
 `name_path` each tool needs (`ClassName/method` for a method,
 `function_name` for a top-level function). Per task:
@@ -132,12 +132,11 @@ With the map and stub loaded, you have the exact `relative_path` and
   wider sweep.
 
 - **Find callers, or check whether a symbol is dead.**
-  `find_referencing_symbols`. Returns every reference resolved by the
-  language server — every import, every call site, every re-export.
-  Grep on the name misses re-exports and adds false positives from
-  comments, strings, and attribute lookups on other types. If the
-  next move depends on the answer being complete, grep cannot give
-  you that.
+  `uncoded refs <name_path> --in <relative_path>`. Prints one reference
+  per line as `file:line:col`, sorted. Grep on the name misses re-exports
+  and adds false positives from comments, strings, and attribute lookups
+  on other types. If the next move depends on the answer being complete,
+  grep cannot give you that.
 
 - **Rename.** `rename_symbol`. Updates every reference across the
   codebase in one call. Multi-file find-and-replace misses imports
@@ -152,7 +151,7 @@ With the map and stub loaded, you have the exact `relative_path` and
   after a manual reference check. The tool fuses two operations: it
   finds every reference, refuses to delete if any are live, and
   removes the symbol cleanly only when it is truly dead. The two-step
-  version (find references with grep or `find_referencing_symbols`,
+  version (find references with grep or `uncoded refs`,
   then Edit) can drift — the reference check goes stale the moment
   any file changes between the calls. Whenever the task is "remove
   this symbol," regardless of how dead it looks, this is the tool.

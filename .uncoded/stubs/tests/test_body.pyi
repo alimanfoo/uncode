@@ -1,8 +1,11 @@
 # tests/test_body.py
 
+import ast
 import textwrap
+from unittest import mock
 import pytest
-from uncoded.body import BodyNotFound, UnsupportedNamePath, resolve_body
+from uncoded.body import resolve_body
+from uncoded.resolver import NamePath, SymbolNotFound, UnsupportedNamePath, resolve_ast_node, resolve_name_position
 
 class TestResolveBodyTopLevel:
     def test_function_without_decorators(self, tmp_path):
@@ -72,22 +75,69 @@ class TestResolveBodyClassMember:
 class TestUnsupportedNamePath:
     SUPPORTED_SHAPES = ("'name'", "'Class/member'")
 
-    def _assert_raises(self, name_path, tmp_path):
+    def _assert_raises(self, name_path):
         ...
 
-    def test_three_segment_path(self, tmp_path):
+    def test_three_segment_path(self):
         ...
 
-    def test_nested_class_shape(self, tmp_path):
+    def test_nested_class_shape(self):
         ...
 
-    def test_empty_leading_segment(self, tmp_path):
+    def test_empty_leading_segment(self):
         ...
 
-    def test_empty_trailing_segment(self, tmp_path):
+    def test_empty_trailing_segment(self):
         ...
 
-    def test_empty_middle_segment(self, tmp_path):
+    def test_empty_middle_segment(self):
+        ...
+
+class TestResolveAstNode:
+    def test_returns_function_def_for_top_level_function(self, tmp_path):
+        ...
+
+    def test_returns_method_node_for_class_member(self, tmp_path):
+        ...
+
+    def test_raises_body_not_found(self, tmp_path):
+        ...
+
+    def test_raises_unsupported_name_path(self):
+        ...
+
+    def test_file_not_found_propagates(self, tmp_path):
+        ...
+
+    def test_syntax_error_propagates(self, tmp_path):
+        ...
+
+class TestResolveNamePosition:
+    def test_function(self, tmp_path):
+        ...
+
+    def test_function_decorator_does_not_shift_line(self, tmp_path):
+        ...
+
+    def test_async_function(self, tmp_path):
+        ...
+
+    def test_class(self, tmp_path):
+        ...
+
+    def test_annotated_assignment(self, tmp_path):
+        ...
+
+    def test_unannotated_assignment(self, tmp_path):
+        ...
+
+    def test_type_alias(self, tmp_path):
+        ...
+
+    def test_class_method(self, tmp_path):
+        ...
+
+    def test_unexpected_node_type_raises_unsupported_name_path(self, tmp_path):
         ...
 
 class TestResolveBodyByteIdentical:
