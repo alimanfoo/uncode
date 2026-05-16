@@ -9,8 +9,9 @@ hallucinated understanding of code that's sitting right there, unread.
 at the start of a task and navigate deterministically to what they need —
 no guessing, no grep.
 
-It also wires up a language server so the agent can find references,
-rename, and edit symbols by name — no grep, no manual find-and-replace.
+It also ships `uncoded refs` for impact analysis and wires up a language
+server so the agent can rename, edit, and safely delete symbols by name —
+no grep, no manual find-and-replace.
 
 ## What it generates
 
@@ -74,7 +75,7 @@ uncoded setup
 
 Generates the MCP and Claude Code configuration that wires up
 [Serena][serena] (language-server bridge) and [ty][ty] (Python backend),
-so agents can find references, rename, and edit symbols by name. Safe
+so agents can rename, edit, and safely delete symbols by name. Safe
 to re-run. See [Using uncoded with a language
 server](#using-uncoded-with-a-language-server) below for the generated
 files and notes on non-Claude-Code agents.
@@ -135,6 +136,26 @@ For example, to retrieve the body of `resolve_body` from `src/uncoded/body.py`:
 uncoded body resolve_body --in src/uncoded/body.py
 ```
 
+## Find references to a symbol
+
+Use the `refs` subcommand for impact analysis: run it before a rename,
+signature change, or delete, or to confirm a symbol is dead before removing it:
+
+```
+uncoded refs <name_path> --in <relative_path>
+```
+
+`name_path` follows the same convention as `body`: one segment for a top-level
+symbol, two for a class member (`Class/method`). Output is one reference per
+line as `<rel_path>:<line>:<col>`, with line and column 1-indexed and results
+sorted by path then line. Exits 0 on success; empty output means no callers.
+
+For example, to find all callers of `resolve_body`:
+
+```
+uncoded refs resolve_body --in src/uncoded/body.py
+```
+
 ## How agents use it
 
 When `uncoded` is set up, a navigation section is automatically maintained in
@@ -144,11 +165,13 @@ Agents following that protocol:
 1. Read `.uncoded/namespace.yaml` to orient — every symbol, at a glance.
 2. Read the relevant `.pyi` stubs to understand imports, signatures, constants, and class members.
 3. Run `uncoded body <name_path> --in <relative_path>` when they need implementation detail for a specific symbol.
-4. Use [Serena](https://github.com/oraios/serena) for cross-symbol operations — finding references, renaming, editing by symbol, and safe-deleting. See [Using uncoded with a language server](#using-uncoded-with-a-language-server) for setup.
+4. Run `uncoded refs <name_path> --in <relative_path>` for impact analysis — callers, dead-symbol checks. See [Find references to a symbol](#find-references-to-a-symbol) for detail.
+5. Use [Serena](https://github.com/oraios/serena) for cross-symbol operations — renaming, editing by symbol, and safe-deleting. See [Using uncoded with a language server](#using-uncoded-with-a-language-server) for setup.
 
 The split is deliberate: `uncoded` provides a stable map and signature index;
-`uncoded body` resolves the current source body; Serena handles cross-symbol
-operations. No grep, no stale line-number coordinates, no offset arithmetic.
+`uncoded body` resolves the current source body; `uncoded refs` maps call
+sites; Serena handles rename, edit, and safe-delete. No grep, no stale
+line-number coordinates, no offset arithmetic.
 
 ## Coherence review
 
@@ -184,10 +207,10 @@ what to follow up.
 
 ## Using uncoded with a language server
 
-Symbol-level operations — finding callers, editing a single symbol,
-renaming, safe deletion — are better served by a language server
-than by grep and freeform text edits. Uncoded's map supplies the
-`name_path` and `relative_path` these tools take as input.
+Symbol-level operations — editing a single symbol, renaming, safe deletion —
+are better served by a language server than by grep and freeform text edits.
+Uncoded's map supplies the `name_path` and `relative_path` these tools take
+as input.
 
 The recommended setup is [oraios/serena][serena] as the MCP bridge with
 [astral-sh/ty][ty] as the Python language-server backend. Serena launches
