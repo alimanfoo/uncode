@@ -292,27 +292,27 @@ class TestResolveBodyClassMember:
 class TestUnsupportedNamePath:
     SUPPORTED_SHAPES = ("'name'", "'Class/member'")
 
-    def _assert_raises(self, name_path, tmp_path):
+    def _assert_raises(self, name_path):
         with pytest.raises(UnsupportedNamePath) as exc_info:
             parse_name_path(name_path)
         msg = str(exc_info.value)
         for shape in self.SUPPORTED_SHAPES:
             assert shape in msg
 
-    def test_three_segment_path(self, tmp_path):
-        self._assert_raises("A/B/C", tmp_path)
+    def test_three_segment_path(self):
+        self._assert_raises("A/B/C")
 
-    def test_nested_class_shape(self, tmp_path):
-        self._assert_raises("Outer/Inner/method", tmp_path)
+    def test_nested_class_shape(self):
+        self._assert_raises("Outer/Inner/method")
 
-    def test_empty_leading_segment(self, tmp_path):
-        self._assert_raises("/foo", tmp_path)
+    def test_empty_leading_segment(self):
+        self._assert_raises("/foo")
 
-    def test_empty_trailing_segment(self, tmp_path):
-        self._assert_raises("foo/", tmp_path)
+    def test_empty_trailing_segment(self):
+        self._assert_raises("foo/")
 
-    def test_empty_middle_segment(self, tmp_path):
-        self._assert_raises("foo//bar", tmp_path)
+    def test_empty_middle_segment(self):
+        self._assert_raises("foo//bar")
 
 
 class TestResolveAstNode:

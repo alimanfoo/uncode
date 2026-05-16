@@ -74,22 +74,22 @@ class TestResolveBodyClassMember:
 class TestUnsupportedNamePath:
     SUPPORTED_SHAPES = ("'name'", "'Class/member'")
 
-    def _assert_raises(self, name_path, tmp_path):
+    def _assert_raises(self, name_path):
         ...
 
-    def test_three_segment_path(self, tmp_path):
+    def test_three_segment_path(self):
         ...
 
-    def test_nested_class_shape(self, tmp_path):
+    def test_nested_class_shape(self):
         ...
 
-    def test_empty_leading_segment(self, tmp_path):
+    def test_empty_leading_segment(self):
         ...
 
-    def test_empty_trailing_segment(self, tmp_path):
+    def test_empty_trailing_segment(self):
         ...
 
-    def test_empty_middle_segment(self, tmp_path):
+    def test_empty_middle_segment(self):
         ...
 
 class TestResolveAstNode:
