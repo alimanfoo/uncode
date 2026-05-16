@@ -1,8 +1,14 @@
+import ast
 import textwrap
 
 import pytest
 
-from uncoded.body import BodyNotFound, UnsupportedNamePath, resolve_body
+from uncoded.body import (
+    BodyNotFound,
+    UnsupportedNamePath,
+    resolve_ast_node,
+    resolve_body,
+)
 
 
 class TestResolveBodyTopLevel:
@@ -305,6 +311,60 @@ class TestUnsupportedNamePath:
 
     def test_empty_middle_segment(self, tmp_path):
         self._assert_raises("foo//bar", tmp_path)
+
+
+class TestResolveAstNode:
+    def test_returns_function_def_for_top_level_function(self, tmp_path):
+        source = textwrap.dedent("""\
+            def compute(x: int) -> int:
+                return x * 2
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        node = resolve_ast_node("compute", path)
+
+        assert isinstance(node, ast.FunctionDef)
+        assert node.name == "compute"
+
+    def test_returns_method_node_for_class_member(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Engine:
+                def start(self):
+                    pass
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        node = resolve_ast_node("Engine/start", path)
+
+        assert isinstance(node, ast.FunctionDef)
+        assert node.name == "start"
+
+    def test_raises_body_not_found(self, tmp_path):
+        path = tmp_path / "m.py"
+        path.write_text("def other(): pass\n")
+
+        with pytest.raises(BodyNotFound, match="missing"):
+            resolve_ast_node("missing", path)
+
+    def test_raises_unsupported_name_path(self, tmp_path):
+        path = tmp_path / "m.py"
+        path.write_text("def foo(): pass\n")
+
+        with pytest.raises(UnsupportedNamePath):
+            resolve_ast_node("A/B/C", path)
+
+    def test_file_not_found_propagates(self, tmp_path):
+        with pytest.raises(FileNotFoundError):
+            resolve_ast_node("foo", tmp_path / "nonexistent.py")
+
+    def test_syntax_error_propagates(self, tmp_path):
+        path = tmp_path / "m.py"
+        path.write_text("def broken(:\n")
+
+        with pytest.raises(SyntaxError):
+            resolve_ast_node("broken", path)
 
 
 class TestResolveBodyByteIdentical:

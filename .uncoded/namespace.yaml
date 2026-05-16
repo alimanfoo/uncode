@@ -17,6 +17,7 @@ src/:
     body.py:
       BodyNotFound:
       UnsupportedNamePath:
+      resolve_ast_node:
       resolve_body:
       _resolve_class_member:
       _extract_body:
@@ -150,6 +151,13 @@ tests/:
       test_empty_leading_segment:
       test_empty_trailing_segment:
       test_empty_middle_segment:
+    TestResolveAstNode:
+      test_returns_function_def_for_top_level_function:
+      test_returns_method_node_for_class_member:
+      test_raises_body_not_found:
+      test_raises_unsupported_name_path:
+      test_file_not_found_propagates:
+      test_syntax_error_propagates:
     TestResolveBodyByteIdentical:
       test_exact_source_returned:
   test_cli.py:

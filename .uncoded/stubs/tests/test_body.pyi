@@ -1,8 +1,9 @@
 # tests/test_body.py
 
+import ast
 import textwrap
 import pytest
-from uncoded.body import BodyNotFound, UnsupportedNamePath, resolve_body
+from uncoded.body import BodyNotFound, UnsupportedNamePath, resolve_ast_node, resolve_body
 
 class TestResolveBodyTopLevel:
     def test_function_without_decorators(self, tmp_path):
@@ -88,6 +89,25 @@ class TestUnsupportedNamePath:
         ...
 
     def test_empty_middle_segment(self, tmp_path):
+        ...
+
+class TestResolveAstNode:
+    def test_returns_function_def_for_top_level_function(self, tmp_path):
+        ...
+
+    def test_returns_method_node_for_class_member(self, tmp_path):
+        ...
+
+    def test_raises_body_not_found(self, tmp_path):
+        ...
+
+    def test_raises_unsupported_name_path(self, tmp_path):
+        ...
+
+    def test_file_not_found_propagates(self, tmp_path):
+        ...
+
+    def test_syntax_error_propagates(self, tmp_path):
         ...
 
 class TestResolveBodyByteIdentical:

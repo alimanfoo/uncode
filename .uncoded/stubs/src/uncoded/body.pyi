@@ -4,10 +4,13 @@ import ast
 from pathlib import Path
 from uncoded.ast_helpers import assign_target_name, property_kind
 
+def resolve_ast_node(name_path: str, in_path: Path) -> ast.stmt:
+    ...
+
 def resolve_body(name_path: str, in_path: Path) -> str:
     ...
 
-def _resolve_class_member(*, name_path: str, in_path: Path, class_node: ast.ClassDef, member_name: str, lines: list[str]) -> str:
+def _resolve_class_member(*, name_path: str, in_path: Path, class_node: ast.ClassDef, member_name: str) -> ast.stmt:
     ...
 
 def _extract_body(*, node: ast.stmt, lines: list[str]) -> str:
