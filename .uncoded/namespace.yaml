@@ -15,18 +15,7 @@ src/:
       property_kind:
       assign_target_name:
     body.py:
-      NamePath:
-        head:
-        tail:
-        __str__:
-      SymbolNotFound:
-      UnsupportedNamePath:
-      parse_name_path:
-      resolve_ast_node:
-      resolve_name_position:
       resolve_body:
-      _resolve_ast_node_from_source:
-      _resolve_class_member:
       _extract_body:
     cli.py:
       _find_project_root:
@@ -86,6 +75,18 @@ src/:
       _read_message:
       _read_response:
       _uri_to_path:
+    resolver.py:
+      NamePath:
+        head:
+        tail:
+        parse:
+        __str__:
+      SymbolNotFound:
+      UnsupportedNamePath:
+      resolve_ast_node:
+      resolve_name_position:
+      _resolve_ast_node_from_source:
+      _resolve_class_member:
     serena_setup.py:
       _Status:
       SERENA_VERSION:

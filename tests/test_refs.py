@@ -7,7 +7,6 @@ from unittest import mock
 
 import pytest
 
-from uncoded.body import NamePath
 from uncoded.refs import (
     Reference,
     _find_root,
@@ -20,6 +19,7 @@ from uncoded.refs import (
     find_refs,
     query_references,
 )
+from uncoded.resolver import NamePath
 
 
 def _lsp_stream(*msgs: dict) -> io.BytesIO:

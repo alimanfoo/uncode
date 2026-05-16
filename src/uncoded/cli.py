@@ -4,12 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from uncoded.body import (
-    SymbolNotFound,
-    UnsupportedNamePath,
-    parse_name_path,
-    resolve_body,
-)
+from uncoded.body import resolve_body
 from uncoded.config import (
     find_pyproject_toml,
     read_instruction_files,
@@ -19,6 +14,7 @@ from uncoded.extract import extract_modules, iter_source_files
 from uncoded.instruction_files import sync_instruction_file
 from uncoded.namespace_map import build_map, render_map
 from uncoded.refs import find_refs
+from uncoded.resolver import NamePath, SymbolNotFound, UnsupportedNamePath
 from uncoded.serena_setup import setup
 from uncoded.skill import sync_skill
 from uncoded.stubs import build_stubs
@@ -152,7 +148,7 @@ def _body(*, name_path: str, in_path: str) -> int:
     """
     target = Path(in_path)
     try:
-        body = resolve_body(parse_name_path(name_path), target)
+        body = resolve_body(NamePath.parse(name_path), target)
     except UnsupportedNamePath as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -180,7 +176,7 @@ def _refs(*, name_path: str, in_path: str) -> int:
     # raises ValueError on a relative path.
     target = Path(in_path).resolve()
     try:
-        refs = find_refs(parse_name_path(name_path), target)
+        refs = find_refs(NamePath.parse(name_path), target)
     except UnsupportedNamePath as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1

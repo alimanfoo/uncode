@@ -4,7 +4,8 @@ import ast
 import textwrap
 from unittest import mock
 import pytest
-from uncoded.body import NamePath, SymbolNotFound, UnsupportedNamePath, parse_name_path, resolve_ast_node, resolve_body, resolve_name_position
+from uncoded.body import resolve_body
+from uncoded.resolver import NamePath, SymbolNotFound, UnsupportedNamePath, resolve_ast_node, resolve_name_position
 
 class TestResolveBodyTopLevel:
     def test_function_without_decorators(self, tmp_path):

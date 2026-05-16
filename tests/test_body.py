@@ -4,13 +4,12 @@ from unittest import mock
 
 import pytest
 
-from uncoded.body import (
+from uncoded.body import resolve_body
+from uncoded.resolver import (
     NamePath,
     SymbolNotFound,
     UnsupportedNamePath,
-    parse_name_path,
     resolve_ast_node,
-    resolve_body,
     resolve_name_position,
 )
 
@@ -294,7 +293,7 @@ class TestUnsupportedNamePath:
 
     def _assert_raises(self, name_path):
         with pytest.raises(UnsupportedNamePath) as exc_info:
-            parse_name_path(name_path)
+            NamePath.parse(name_path)
         msg = str(exc_info.value)
         for shape in self.SUPPORTED_SHAPES:
             assert shape in msg
@@ -352,7 +351,7 @@ class TestResolveAstNode:
 
     def test_raises_unsupported_name_path(self):
         with pytest.raises(UnsupportedNamePath):
-            parse_name_path("A/B/C")
+            NamePath.parse("A/B/C")
 
     def test_file_not_found_propagates(self, tmp_path):
         with pytest.raises(FileNotFoundError):
@@ -453,7 +452,7 @@ class TestResolveNamePosition:
         path.write_text("pass\n")
 
         with (
-            mock.patch("uncoded.body.resolve_ast_node", return_value=ast.Pass()),
+            mock.patch("uncoded.resolver.resolve_ast_node", return_value=ast.Pass()),
             pytest.raises(UnsupportedNamePath),
         ):
             resolve_name_position(NamePath("anything"), path)
