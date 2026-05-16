@@ -144,10 +144,11 @@ Agents following that protocol:
 1. Read `.uncoded/namespace.yaml` to orient — every symbol, at a glance.
 2. Read the relevant `.pyi` stubs to understand imports, signatures, constants, and class members.
 3. Run `uncoded body <name_path> --in <relative_path>` when they need implementation detail for a specific symbol.
+4. Use [Serena](https://github.com/oraios/serena) for cross-symbol operations — finding references, renaming, editing by symbol, and safe-deleting. See [Using uncoded with a language server](#using-uncoded-with-a-language-server) for setup.
 
 The split is deliberate: `uncoded` provides a stable map and signature index;
-`uncoded body` resolves the current source body. No grep, no stale
-line-number coordinates, no offset arithmetic.
+`uncoded body` resolves the current source body; Serena handles cross-symbol
+operations. No grep, no stale line-number coordinates, no offset arithmetic.
 
 ## Coherence review
 
@@ -203,8 +204,9 @@ Generates three files, tailored for Claude Code:
 
 - **`.mcp.json`** — registers Serena as an MCP server, launched via `uvx`.
 - **`.serena/project.yml`** — picks ty as the backend, ignores `.uncoded/`,
-  and narrows Serena's tool surface (drops `execute_shell_command`, the
-  memory tools, onboarding helpers, and the dashboard opener).
+  and narrows Serena's tool surface (drops `execute_shell_command` and
+  `find_symbol`, the memory tools, onboarding helpers, and the dashboard
+  opener).
 - **`.claude/settings.json`** — enables the Serena server and allowlists
   its navigation and edit tools.
 

@@ -18,6 +18,7 @@ REPO_ROOT = Path(__file__).parent.parent
 # SERENA_PROJECT_FIELDS shows up here.
 EXPECTED_EXCLUDED_TOOLS = {
     "execute_shell_command",
+    "find_symbol",
     "list_memories",
     "read_memory",
     "write_memory",

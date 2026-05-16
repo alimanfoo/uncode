@@ -21,10 +21,10 @@ automatically:
   offenders, and the allowlist completes the narrowing.
 
 The exclusions in :data:`SERENA_PROJECT_FIELDS` defend in depth alongside
-the prose ``Skip activate_project and check_onboarding_performed`` line
-in ``instruction_files._SECTION_BODY``: the prose tells the agent not to
-call those tools, and the project config drops them from Serena's
-exposed surface so the call cannot land even if the prose is missed.
+``instruction_files._SECTION_BODY``: the prose routes agents toward the
+right tools — and explicitly skips a couple by name — while the project
+config narrows Serena's surface so calls outside that routing cannot land
+even if the prose is missed.
 
 JSON files merge into existing content: pre-existing non-Serena MCP
 servers and permissions are preserved, while the Serena entry itself
@@ -83,6 +83,7 @@ SERENA_PROJECT_FIELDS = {
     "ignored_paths": [".uncoded"],
     "excluded_tools": [
         "execute_shell_command",
+        "find_symbol",
         "list_memories",
         "read_memory",
         "write_memory",
