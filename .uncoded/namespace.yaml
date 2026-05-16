@@ -63,12 +63,18 @@ src/:
     refs.py:
       TY_VERSION:
       Reference:
+        rel_path:
+        line:
+        col:
+      _LSPLocation:
         path:
         line:
         character:
+      find_refs:
       query_references:
       _find_root:
       _terminate:
+      _to_rel_path:
       _run_exchange:
       _write_message:
       _read_message:
@@ -307,6 +313,15 @@ tests/:
       test_header_mentions_stub_pointer:
       test_header_does_not_break_yaml_parse:
   test_refs.py:
+    TestFindRefs:
+      test_returns_empty_for_dead_symbol:
+      test_finds_multiple_references_across_files:
+      test_class_method_shape:
+      test_results_are_sorted:
+      test_line_and_col_are_one_indexed:
+    TestToRelPath:
+      test_returns_relative_path_when_under_cwd:
+      test_returns_absolute_path_when_outside_cwd:
     TestQueryReferences:
       test_finds_call_sites:
       test_returns_empty_list_when_no_references:

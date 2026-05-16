@@ -8,11 +8,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, cast
 from urllib.parse import urlparse
+from uncoded.body import resolve_name_position
 from uncoded.config import find_pyproject_toml
 
 TY_VERSION = '0.0.37'
 
-def query_references(in_path: Path, position: tuple[int, int]) -> list[Reference]:
+def find_refs(name_path: str, in_path: Path) -> list[Reference]:
+    ...
+
+def query_references(in_path: Path, position: tuple[int, int]) -> list[_LSPLocation]:
     ...
 
 def _find_root(in_path: Path) -> Path:
@@ -21,7 +25,10 @@ def _find_root(in_path: Path) -> Path:
 def _terminate(*, proc: subprocess.Popen[bytes]) -> None:
     ...
 
-def _run_exchange(*, stdin: IO[bytes], stdout: IO[bytes], in_path: Path, position: tuple[int, int], root: Path) -> list[Reference]:
+def _to_rel_path(*, path: Path) -> Path:
+    ...
+
+def _run_exchange(*, stdin: IO[bytes], stdout: IO[bytes], in_path: Path, position: tuple[int, int], root: Path) -> list[_LSPLocation]:
     ...
 
 def _write_message(*, stream: IO[bytes], msg: dict) -> None:
@@ -37,6 +44,11 @@ def _uri_to_path(uri: str) -> Path:
     ...
 
 class Reference:
+    rel_path: Path
+    line: int
+    col: int
+
+class _LSPLocation:
     path: Path
     line: int
     character: int

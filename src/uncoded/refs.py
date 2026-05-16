@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import IO, cast
 from urllib.parse import urlparse
 
+from uncoded.body import resolve_name_position
 from uncoded.config import find_pyproject_toml
 
 TY_VERSION = "0.0.37"
@@ -17,15 +18,39 @@ TY_VERSION = "0.0.37"
 
 @dataclass(frozen=True)
 class Reference:
-    """A single reference location returned by ty's LSP server."""
+    """A reference location with 1-indexed line and column."""
 
-    path: Path
+    rel_path: Path
     line: int
-    character: int
+    col: int
 
 
-def query_references(in_path: Path, position: tuple[int, int]) -> list[Reference]:
-    """Return all references to the symbol at position in in_path.
+def find_refs(name_path: str, in_path: Path) -> list[Reference]:
+    """Return all references to the symbol named by name_path in in_path.
+
+    Resolves the symbol's name-token position, queries ty's LSP server for
+    references, and returns results with 1-indexed line/col sorted by
+    (rel_path, line, col). rel_path is relative to the current working
+    directory when possible; otherwise absolute.
+    Propagates UnsupportedNamePath, BodyNotFound, FileNotFoundError, and
+    SyntaxError from resolve_name_position.
+    """
+    position = resolve_name_position(name_path, in_path)
+    raw_refs = query_references(in_path, position)
+    result = [
+        Reference(
+            rel_path=_to_rel_path(path=ref.path),
+            line=ref.line + 1,
+            col=ref.character + 1,
+        )
+        for ref in raw_refs
+    ]
+    result.sort(key=lambda r: (r.rel_path, r.line, r.col))
+    return result
+
+
+def query_references(in_path: Path, position: tuple[int, int]) -> list[_LSPLocation]:
+    """Return raw LSP reference locations for the symbol at position in in_path.
 
     Spawns ty as a one-shot LSP subprocess and performs the full
     initialize/didOpen/references/shutdown exchange.
@@ -50,6 +75,15 @@ def query_references(in_path: Path, position: tuple[int, int]) -> list[Reference
         _terminate(proc=proc)
 
 
+@dataclass(frozen=True)
+class _LSPLocation:
+    """Raw LSP reference location with 0-indexed line and character."""
+
+    path: Path
+    line: int
+    character: int
+
+
 def _find_root(in_path: Path) -> Path:
     pyproject = find_pyproject_toml(in_path.parent)
     return pyproject.parent if pyproject is not None else in_path.parent
@@ -63,6 +97,13 @@ def _terminate(*, proc: subprocess.Popen[bytes]) -> None:
         proc.wait()
 
 
+def _to_rel_path(*, path: Path) -> Path:
+    try:
+        return path.relative_to(Path.cwd())
+    except ValueError:
+        return path
+
+
 def _run_exchange(
     *,
     stdin: IO[bytes],
@@ -70,7 +111,7 @@ def _run_exchange(
     in_path: Path,
     position: tuple[int, int],
     root: Path,
-) -> list[Reference]:
+) -> list[_LSPLocation]:
     root_uri = root.as_uri()
     file_uri = in_path.as_uri()
 
@@ -141,7 +182,7 @@ def _run_exchange(
     if result is None:
         return []
     return [
-        Reference(
+        _LSPLocation(
             path=_uri_to_path(loc["uri"]),
             line=loc["range"]["start"]["line"],
             character=loc["range"]["start"]["character"],

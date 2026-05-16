@@ -1,6 +1,8 @@
 import io
 import json
 import subprocess
+import textwrap
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -8,10 +10,13 @@ import pytest
 from uncoded.refs import (
     Reference,
     _find_root,
+    _LSPLocation,
     _read_message,
     _read_response,
     _run_exchange,
     _terminate,
+    _to_rel_path,
+    find_refs,
     query_references,
 )
 
@@ -33,6 +38,101 @@ def _shutdown_response() -> dict:
     return {"jsonrpc": "2.0", "id": 3, "result": None}
 
 
+class TestFindRefs:
+    def test_returns_empty_for_dead_symbol(self, tmp_path):
+        pkg = tmp_path / "pkg"
+        pkg.mkdir()
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "t"\n')
+        (pkg / "a.py").write_text("def uncalled():\n    pass\n")
+
+        refs = find_refs("uncalled", pkg / "a.py")
+
+        assert refs == []
+
+    def test_finds_multiple_references_across_files(self, tmp_path):
+        pkg = tmp_path / "pkg"
+        pkg.mkdir()
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "t"\n')
+        (pkg / "a.py").write_text("def foo():\n    return 42\n")
+        (pkg / "b.py").write_text(
+            "from pkg.a import foo\nresult = foo()\nother = foo()\n"
+        )
+
+        refs = find_refs("foo", pkg / "a.py")
+
+        assert len(refs) == 2
+        assert all(isinstance(r, Reference) for r in refs)
+        assert all(r.rel_path == pkg / "b.py" for r in refs)
+        assert [r.line for r in refs] == [2, 3]
+        assert all(r.col >= 1 for r in refs)
+
+    def test_class_method_shape(self, tmp_path):
+        pkg = tmp_path / "pkg"
+        pkg.mkdir()
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "t"\n')
+        (pkg / "a.py").write_text(
+            textwrap.dedent("""\
+            class Dog:
+                def bark(self):
+                    pass
+        """)
+        )
+        (pkg / "b.py").write_text(
+            "from pkg.a import Dog\nd = Dog()\nd.bark()\nd.bark()\n"
+        )
+
+        refs = find_refs("Dog/bark", pkg / "a.py")
+
+        assert len(refs) == 2
+        assert all(r.rel_path == pkg / "b.py" for r in refs)
+
+    def test_results_are_sorted(self, tmp_path):
+        pkg = tmp_path / "pkg"
+        pkg.mkdir()
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "t"\n')
+        (pkg / "a.py").write_text("def foo():\n    return 42\n")
+        (pkg / "b.py").write_text(
+            "from pkg.a import foo\nresult = foo()\nother = foo()\n"
+        )
+
+        refs = find_refs("foo", pkg / "a.py")
+
+        assert refs == sorted(refs, key=lambda r: (r.rel_path, r.line, r.col))
+
+    def test_line_and_col_are_one_indexed(self, tmp_path):
+        pkg = tmp_path / "pkg"
+        pkg.mkdir()
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "t"\n')
+        (pkg / "a.py").write_text("def foo():\n    return 42\n")
+        (pkg / "b.py").write_text("from pkg.a import foo\nfoo()\n")
+
+        refs = find_refs("foo", pkg / "a.py")
+
+        assert len(refs) == 1
+        assert refs[0].line == 2
+        assert refs[0].col == 1
+
+
+class TestToRelPath:
+    def test_returns_relative_path_when_under_cwd(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        path = tmp_path / "pkg" / "m.py"
+
+        result = _to_rel_path(path=path)
+
+        assert result == Path("pkg/m.py")
+
+    def test_returns_absolute_path_when_outside_cwd(self, tmp_path, monkeypatch):
+        workspace = tmp_path / "workspace"
+        workspace.mkdir()
+        monkeypatch.chdir(workspace)
+        other = tmp_path / "elsewhere" / "m.py"
+
+        result = _to_rel_path(path=other)
+
+        assert result == other
+
+
 class TestQueryReferences:
     def test_finds_call_sites(self, tmp_path):
         pkg = tmp_path / "pkg"
@@ -46,7 +146,7 @@ class TestQueryReferences:
         refs = query_references(pkg / "a.py", (0, 4))
 
         assert len(refs) == 2
-        assert all(isinstance(r, Reference) for r in refs)
+        assert all(isinstance(r, _LSPLocation) for r in refs)
         assert all(r.path == pkg / "b.py" for r in refs)
         assert {r.line for r in refs} == {1, 2}
 
@@ -71,7 +171,7 @@ class TestRunExchange:
                 "jsonrpc": "2.0",
                 "id": 2,
                 "error": {"code": -32602, "message": "not open"},
-            },  # noqa: E501
+            },
         )
 
         with pytest.raises(RuntimeError, match="ty LSP error"):

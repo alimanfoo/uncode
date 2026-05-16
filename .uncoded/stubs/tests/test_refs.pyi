@@ -3,9 +3,11 @@
 import io
 import json
 import subprocess
+import textwrap
+from pathlib import Path
 from unittest import mock
 import pytest
-from uncoded.refs import Reference, _find_root, _read_message, _read_response, _run_exchange, _terminate, query_references
+from uncoded.refs import Reference, _find_root, _LSPLocation, _read_message, _read_response, _run_exchange, _terminate, _to_rel_path, find_refs, query_references
 
 def _lsp_stream(*msgs: dict) -> io.BytesIO:
     ...
@@ -15,6 +17,29 @@ def _init_response() -> dict:
 
 def _shutdown_response() -> dict:
     ...
+
+class TestFindRefs:
+    def test_returns_empty_for_dead_symbol(self, tmp_path):
+        ...
+
+    def test_finds_multiple_references_across_files(self, tmp_path):
+        ...
+
+    def test_class_method_shape(self, tmp_path):
+        ...
+
+    def test_results_are_sorted(self, tmp_path):
+        ...
+
+    def test_line_and_col_are_one_indexed(self, tmp_path):
+        ...
+
+class TestToRelPath:
+    def test_returns_relative_path_when_under_cwd(self, tmp_path, monkeypatch):
+        ...
+
+    def test_returns_absolute_path_when_outside_cwd(self, tmp_path, monkeypatch):
+        ...
 
 class TestQueryReferences:
     def test_finds_call_sites(self, tmp_path):
