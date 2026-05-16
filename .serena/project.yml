@@ -80,6 +80,7 @@ ignored_paths:
 excluded_tools:
 - execute_shell_command
 - find_symbol
+- find_referencing_symbols
 - list_memories
 - read_memory
 - write_memory

@@ -19,6 +19,7 @@ REPO_ROOT = Path(__file__).parent.parent
 EXPECTED_EXCLUDED_TOOLS = {
     "execute_shell_command",
     "find_symbol",
+    "find_referencing_symbols",
     "list_memories",
     "read_memory",
     "write_memory",

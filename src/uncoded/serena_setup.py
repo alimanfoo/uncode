@@ -82,6 +82,7 @@ SERENA_PROJECT_FIELDS = {
     "excluded_tools": [
         "execute_shell_command",
         "find_symbol",
+        "find_referencing_symbols",
         "list_memories",
         "read_memory",
         "write_memory",
@@ -97,7 +98,6 @@ SERENA_PROJECT_FIELDS = {
 
 SERENA_ALLOWED_TOOLS = [
     "mcp__serena__initial_instructions",
-    "mcp__serena__find_referencing_symbols",
     "mcp__serena__get_symbols_overview",
     "mcp__serena__rename_symbol",
     "mcp__serena__safe_delete_symbol",
