@@ -148,7 +148,7 @@ uncoded refs <name_path> --in <relative_path>
 `name_path` follows the same convention as `body`: one segment for a top-level
 symbol, two for a class member (`Class/method`). Output is one reference per
 line as `<rel_path>:<line>:<col>`, with line and column 1-indexed and results
-sorted by path then line. Exits 0 on success; empty output means no callers.
+sorted by path, then line, then column. Exits 0 on success; empty output means no callers.
 
 For example, to find all callers of `resolve_body`:
 
