@@ -173,6 +173,10 @@ class TestQueryReferences:
         ):
             query_references(in_path, (0, 4))
 
+    def test_relative_path_raises_value_error(self):
+        with pytest.raises(ValueError, match="absolute path"):
+            query_references(Path("relative/m.py"), (0, 0))
+
     def test_returns_empty_list_when_no_references(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text('[project]\nname = "t"\n')
         m = tmp_path / "m.py"
