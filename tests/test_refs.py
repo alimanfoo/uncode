@@ -150,6 +150,16 @@ class TestQueryReferences:
         assert all(r.path == pkg / "b.py" for r in refs)
         assert {r.line for r in refs} == {1, 2}
 
+    def test_uvx_not_found_raises_runtime_error(self, tmp_path):
+        in_path = tmp_path / "m.py"
+        in_path.write_text("def foo(): pass\n")
+
+        with (
+            mock.patch("uncoded.refs.subprocess.Popen", side_effect=FileNotFoundError),
+            pytest.raises(RuntimeError, match="uvx not found"),
+        ):
+            query_references(in_path, (0, 4))
+
     def test_returns_empty_list_when_no_references(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text('[project]\nname = "t"\n')
         m = tmp_path / "m.py"

@@ -338,6 +338,7 @@ tests/:
       test_returns_absolute_path_when_outside_cwd:
     TestQueryReferences:
       test_finds_call_sites:
+      test_uvx_not_found_raises_runtime_error:
       test_returns_empty_list_when_no_references:
     TestRunExchange:
       test_lsp_error_raises:

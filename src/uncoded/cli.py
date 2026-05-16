@@ -186,7 +186,7 @@ def _refs(*, name_path: str, in_path: str) -> int:
     except SyntaxError as e:
         print(f"Error: {in_path}: {e}", file=sys.stderr)
         return 1
-    except Exception as e:
+    except RuntimeError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 

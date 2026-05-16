@@ -57,12 +57,17 @@ def query_references(in_path: Path, position: tuple[int, int]) -> list[_LSPLocat
     position follows LSP convention: (line, character), both 0-indexed.
     """
     root = _find_root(in_path)
-    proc = subprocess.Popen(
-        ["uvx", "--from", f"ty=={TY_VERSION}", "ty", "server"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    try:
+        proc = subprocess.Popen(
+            ["uvx", "--from", f"ty=={TY_VERSION}", "ty", "server"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError(
+            "uvx not found on PATH — install uv (https://docs.astral.sh/uv/)"
+        ) from exc
     try:
         return _run_exchange(
             stdin=cast(IO[bytes], proc.stdin),
@@ -169,7 +174,8 @@ def _run_exchange(
     response = _read_response(stream=stdout, request_id=2)
 
     if "error" in response:
-        raise RuntimeError(f"ty LSP error: {response['error']}")
+        error = response["error"]
+        raise RuntimeError(f"ty LSP error: {error.get('message', error)}")
 
     _write_message(
         stream=stdin,
