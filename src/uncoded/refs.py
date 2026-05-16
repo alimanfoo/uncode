@@ -62,7 +62,7 @@ def query_references(in_path: Path, position: tuple[int, int]) -> list[_LSPLocat
             ["uvx", "--from", f"ty=={TY_VERSION}", "ty", "server"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
         )
     except FileNotFoundError as exc:
         raise RuntimeError(
@@ -173,16 +173,16 @@ def _run_exchange(
     )
     response = _read_response(stream=stdout, request_id=2)
 
-    if "error" in response:
-        error = response["error"]
-        raise RuntimeError(f"ty LSP error: {error.get('message', error)}")
-
     _write_message(
         stream=stdin,
         msg={"jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": None},
     )
     _read_response(stream=stdout, request_id=3)
     _write_message(stream=stdin, msg={"jsonrpc": "2.0", "method": "exit"})
+
+    if "error" in response:
+        error = response["error"]
+        raise RuntimeError(f"ty LSP error: {error.get('message', error)}")
 
     result = response["result"]
     if result is None:

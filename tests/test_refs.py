@@ -182,6 +182,7 @@ class TestRunExchange:
                 "id": 2,
                 "error": {"code": -32602, "message": "not open"},
             },
+            _shutdown_response(),
         )
 
         with pytest.raises(RuntimeError, match="ty LSP error"):
