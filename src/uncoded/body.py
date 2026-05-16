@@ -2,6 +2,7 @@
 
 import ast
 from pathlib import Path
+from typing import cast
 
 from uncoded.ast_helpers import assign_target_name, property_kind
 
@@ -33,6 +34,30 @@ def resolve_ast_node(name_path: str, in_path: Path) -> ast.stmt:
     return _resolve_ast_node_from_source(
         name_path=name_path, source=source, in_path=in_path
     )
+
+
+def resolve_name_position(name_path: str, in_path: Path) -> tuple[int, int]:
+    """Return the 0-indexed (line, character) position of the name token for name_path.
+
+    Follows LSP convention: both line and character are 0-indexed.
+    For def/async def/class, character points past the keyword to the identifier.
+    For assignments and type aliases, character points at the start of the target name.
+    Raises UnsupportedNamePath, BodyNotFound, FileNotFoundError, and SyntaxError
+    under the same conditions as resolve_ast_node.
+    """
+    node = resolve_ast_node(name_path, in_path)
+    if isinstance(node, ast.FunctionDef):
+        return (node.lineno - 1, node.col_offset + len("def "))
+    if isinstance(node, ast.AsyncFunctionDef):
+        return (node.lineno - 1, node.col_offset + len("async def "))
+    if isinstance(node, ast.ClassDef):
+        return (node.lineno - 1, node.col_offset + len("class "))
+    if isinstance(node, ast.AnnAssign):
+        return (node.target.lineno - 1, node.target.col_offset)
+    if isinstance(node, ast.Assign):
+        return (node.targets[0].lineno - 1, node.targets[0].col_offset)
+    alias = cast(ast.TypeAlias, node)
+    return (alias.name.lineno - 1, alias.name.col_offset)
 
 
 def resolve_body(name_path: str, in_path: Path) -> str:

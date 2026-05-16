@@ -8,6 +8,7 @@ from uncoded.body import (
     UnsupportedNamePath,
     resolve_ast_node,
     resolve_body,
+    resolve_name_position,
 )
 
 
@@ -365,6 +366,89 @@ class TestResolveAstNode:
 
         with pytest.raises(SyntaxError):
             resolve_ast_node("broken", path)
+
+
+class TestResolveNamePosition:
+    def test_function(self, tmp_path):
+        source = textwrap.dedent("""\
+            def compute(x: int) -> int:
+                return x * 2
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        assert resolve_name_position("compute", path) == (0, 4)
+
+    def test_function_decorator_does_not_shift_line(self, tmp_path):
+        source = textwrap.dedent("""\
+            import functools
+
+            @functools.cache
+            def compute():
+                return 1
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        assert resolve_name_position("compute", path) == (3, 4)
+
+    def test_async_function(self, tmp_path):
+        source = textwrap.dedent("""\
+            async def fetch():
+                return 0
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        assert resolve_name_position("fetch", path) == (0, 10)
+
+    def test_class(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Engine:
+                pass
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        assert resolve_name_position("Engine", path) == (0, 6)
+
+    def test_annotated_assignment(self, tmp_path):
+        source = textwrap.dedent("""\
+            MAX: int = 100
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        assert resolve_name_position("MAX", path) == (0, 0)
+
+    def test_unannotated_assignment(self, tmp_path):
+        source = textwrap.dedent("""\
+            TIMEOUT = 30
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        assert resolve_name_position("TIMEOUT", path) == (0, 0)
+
+    def test_type_alias(self, tmp_path):
+        source = textwrap.dedent("""\
+            type UserId = int
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        assert resolve_name_position("UserId", path) == (0, 5)
+
+    def test_class_method(self, tmp_path):
+        source = textwrap.dedent("""\
+            class Dog:
+                def bark(self):
+                    pass
+        """)
+        path = tmp_path / "m.py"
+        path.write_text(source)
+
+        assert resolve_name_position("Dog/bark", path) == (1, 8)
 
 
 class TestResolveBodyByteIdentical:

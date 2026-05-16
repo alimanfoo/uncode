@@ -3,7 +3,7 @@
 import ast
 import textwrap
 import pytest
-from uncoded.body import BodyNotFound, UnsupportedNamePath, resolve_ast_node, resolve_body
+from uncoded.body import BodyNotFound, UnsupportedNamePath, resolve_ast_node, resolve_body, resolve_name_position
 
 class TestResolveBodyTopLevel:
     def test_function_without_decorators(self, tmp_path):
@@ -108,6 +108,31 @@ class TestResolveAstNode:
         ...
 
     def test_syntax_error_propagates(self, tmp_path):
+        ...
+
+class TestResolveNamePosition:
+    def test_function(self, tmp_path):
+        ...
+
+    def test_function_decorator_does_not_shift_line(self, tmp_path):
+        ...
+
+    def test_async_function(self, tmp_path):
+        ...
+
+    def test_class(self, tmp_path):
+        ...
+
+    def test_annotated_assignment(self, tmp_path):
+        ...
+
+    def test_unannotated_assignment(self, tmp_path):
+        ...
+
+    def test_type_alias(self, tmp_path):
+        ...
+
+    def test_class_method(self, tmp_path):
         ...
 
 class TestResolveBodyByteIdentical:

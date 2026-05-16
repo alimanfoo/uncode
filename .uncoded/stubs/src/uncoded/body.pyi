@@ -2,9 +2,13 @@
 
 import ast
 from pathlib import Path
+from typing import cast
 from uncoded.ast_helpers import assign_target_name, property_kind
 
 def resolve_ast_node(name_path: str, in_path: Path) -> ast.stmt:
+    ...
+
+def resolve_name_position(name_path: str, in_path: Path) -> tuple[int, int]:
     ...
 
 def resolve_body(name_path: str, in_path: Path) -> str:
