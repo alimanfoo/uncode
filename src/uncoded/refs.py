@@ -13,6 +13,8 @@ from urllib.parse import unquote, urlparse
 from uncoded.config import find_pyproject_toml
 from uncoded.resolver import NamePath, resolve_name_position
 
+# Strict pin: ty is pre-1.0 with known textDocument/references edge
+# cases. See #111 before bumping.
 TY_VERSION = "0.0.37"
 
 
