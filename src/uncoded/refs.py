@@ -62,9 +62,7 @@ def _query_references(
     position follows LSP convention: (line, character), both 0-indexed.
     """
     if not in_path.is_absolute():
-        raise ValueError(
-            f"_query_references requires an absolute path; got {in_path!r}"
-        )
+        raise ValueError(f"absolute path required; got {in_path!r}")
     root = _find_root(in_path)
     try:
         proc = subprocess.Popen(
