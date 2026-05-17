@@ -9,9 +9,8 @@ hallucinated understanding of code that's sitting right there, unread.
 at the start of a task and navigate deterministically to what they need —
 no guessing, no grep.
 
-It also ships `uncoded refs` for impact analysis and wires up a language
-server so the agent can rename, edit, and safely delete symbols by name —
-no grep, no manual find-and-replace.
+It also ships `uncoded body` to read symbol bodies and `uncoded refs` for
+impact analysis — callers, dead-symbol checks, pre-rename footprint.
 
 ## What it generates
 
@@ -66,19 +65,6 @@ roots, builds the index, and updates `CLAUDE.md`/`AGENTS.md`.
 
 Commit the generated `.uncoded/` directory so agents working
 in the repo always have a current index.
-
-## Set up the language server
-
-```
-uncoded setup
-```
-
-Generates the MCP and Claude Code configuration that wires up
-[Serena][serena] (language-server bridge) and [ty][ty] (Python backend),
-so agents can rename, edit, and safely delete symbols by name. Safe
-to re-run. See [Using uncoded with a language
-server](#using-uncoded-with-a-language-server) below for the generated
-files and notes on non-Claude-Code agents.
 
 ## Keep it current with pre-commit
 
@@ -166,12 +152,11 @@ Agents following that protocol:
 2. Read the relevant `.pyi` stubs to understand imports, signatures, constants, and class members.
 3. Run `uncoded body <name_path> --in <relative_path>` when they need implementation detail for a specific symbol.
 4. Run `uncoded refs <name_path> --in <relative_path>` for impact analysis — callers, dead-symbol checks. See [Find references to a symbol](#find-references-to-a-symbol) for detail.
-5. Use [Serena](https://github.com/oraios/serena) for cross-symbol operations — renaming, editing by symbol, and safe-deleting. See [Using uncoded with a language server](#using-uncoded-with-a-language-server) for setup.
+5. Edit symbols using `Edit` with `uncoded body`'s output as `old_string`; rename by using `uncoded refs` to enumerate every site, then `Edit` at each; safely delete by confirming `uncoded refs` returns empty, then `Edit` to remove.
 
 The split is deliberate: `uncoded` provides a stable map and signature index;
 `uncoded body` resolves the current source body; `uncoded refs` maps call
-sites; Serena handles rename, edit, and safe-delete. No grep, no stale
-line-number coordinates, no offset arithmetic.
+sites. No grep, no stale line-number coordinates, no offset arithmetic.
 
 ## Coherence review
 
@@ -204,44 +189,6 @@ Output is a timestamped Markdown report saved to `.uncoded/reviews/`, with
 verbatim evidence and a confidence level (high / medium / low) for each
 finding. The review only reports — it proposes no fixes. The human decides
 what to follow up.
-
-## Using uncoded with a language server
-
-Symbol-level operations — editing a single symbol, renaming, safe deletion —
-are better served by a language server than by grep and freeform text edits.
-Uncoded's map supplies the `name_path` and `relative_path` these tools take
-as input.
-
-The recommended setup is [oraios/serena][serena] as the MCP bridge with
-[astral-sh/ty][ty] as the Python language-server backend. Serena launches
-via `uvx`, so there's nothing to install globally; ty is downloaded by
-Serena on first use.
-
-### Setup
-
-```
-uv run uncoded setup
-```
-
-Generates three files, tailored for Claude Code:
-
-- **`.mcp.json`** — registers Serena as an MCP server, launched via `uvx`.
-- **`.serena/project.yml`** — picks ty as the backend, ignores `.uncoded/`,
-  and narrows Serena's tool surface.
-- **`.claude/settings.json`** — enables the Serena server and allowlists
-  its navigation and edit tools.
-
-Safe to re-run: JSON files merge into existing content (so pre-existing
-MCP servers and permissions are preserved), and the Serena project YAML
-is left alone once present. Restart your agent afterwards so the new
-MCP server is picked up.
-
-If you're not using Claude Code, the generated `.serena/project.yml` is
-MCP-client-agnostic, and `.mcp.json` can serve as a starting point —
-replace `claude-code` with your client's context name.
-
-[serena]: https://github.com/oraios/serena
-[ty]: https://github.com/astral-sh/ty
 
 ## Dev setup
 

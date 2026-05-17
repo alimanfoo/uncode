@@ -27,9 +27,8 @@ Two-level index:
    module constants, and class attributes.
 
 Alongside the index, uncoded ships `uncoded body` to read symbol bodies and
-`uncoded refs` to list all call sites, plus a one-shot language-server setup
-so agents can rename and safely delete symbols by name. See "How to read and
-edit code in this codebase" below for the dispatch rule.
+`uncoded refs` to list all call sites. See "How to read and edit code in
+this codebase" below for the dispatch rule.
 
 ## Commands
 
@@ -43,9 +42,6 @@ uv run uncoded sync
 
 # Verify the index without writing; exits non-zero if any file would change
 uv run uncoded check
-
-# Generate Serena + ty MCP and Claude Code configuration
-uv run uncoded setup
 
 # Print the source body of a named symbol to stdout
 uv run uncoded body <name_path> --in <relative_path>
