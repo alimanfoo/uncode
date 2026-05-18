@@ -36,8 +36,9 @@ This project uses [uv](https://docs.astral.sh/uv/). Run `uncoded` commands
 via `uvx` so they run the published package without needing to install it;
 run project tooling (`pytest`, `pre-commit`) via `uv run`.
 
-```
-# Generate (or update) the namespace map, stub files, and instruction-file section
+```sh
+# Generate (or update) the namespace map, stub files, and
+# instruction-file section
 uvx uncoded sync
 
 # Verify the index without writing; exits non-zero if any file would change
@@ -49,7 +50,8 @@ uvx uncoded body <name_path> --in <relative_path>
 # Find references to a symbol
 uvx uncoded refs <name_path> --in <relative_path>
 
-# Run tests (branch coverage enforced; see [tool.coverage.report] in pyproject.toml)
+# Run tests (branch coverage enforced; see [tool.coverage.report]
+# in pyproject.toml)
 uv run pytest
 
 # Run a subset of tests without the coverage gate
@@ -57,6 +59,7 @@ uv run pytest tests/test_stubs.py --no-cov
 ```
 
 <!-- uncoded:start -->
+<!-- markdownlint-disable-file MD041 -->
 ## How to read and edit code in this codebase
 
 This repo uses [uncoded](https://github.com/alimanfoo/uncoded) to maintain
@@ -91,7 +94,7 @@ steps (orient, understand, act).
 **Step 1 — Orient. Read the namespace map first.** Before answering the
 user, before any other tool call:
 
-```
+```text
 Read .uncoded/namespace.yaml
 ```
 
@@ -104,7 +107,7 @@ start.
 **Step 2 — Understand. Read the `.pyi` stub before any `.py` source.**
 Stub paths mirror source paths under `.uncoded/stubs/`:
 
-```
+```text
 src/foo/bar.py      →  .uncoded/stubs/src/foo/bar.pyi
 tests/test_foo.py   →  .uncoded/stubs/tests/test_foo.pyi
 ```
@@ -116,13 +119,15 @@ source means reading many lines to learn what the stub would have told
 you in one. If no stub exists at the expected path, the file has no
 symbols indexed; in that narrow case, read source directly.
 
-**Step 3 — Act. Use `uncoded body` to read a symbol's body; use `uncoded refs` to find
-callers; use `Edit` (with `uncoded body`'s output as `old_string`) to change a symbol.**
+**Step 3 — Act. Use `uncoded body` to read a symbol's body;
+use `uncoded refs` to find callers; use `Edit` (with
+`uncoded body`'s output as `old_string`) to change a symbol.**
 With the map and stub loaded, you have the exact `relative_path` and
 `name_path` each tool needs (`ClassName/method` for a method,
 `function_name` for a top-level function). Per task:
 
-- **Read a symbol's body.** `uvx uncoded body <name_path> --in <relative_path>` —
+- **Read a symbol's body.**
+  `uvx uncoded body <name_path> --in <relative_path>` —
   prints the symbol's source text to stdout, byte-identical to disk.
   Returns exactly the symbol; no offset arithmetic, no risk of reading
   too much. Its output has every byte `Edit` needs as `old_string` — no

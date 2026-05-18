@@ -3,6 +3,8 @@ name: coherence-review
 description: "Perform a coherence review of a Python codebase: a diagnostic sweep for semantic drift, naming inconsistency, promissory mismatch, and structural incoherence. Produces a Markdown report of findings with verbatim evidence and confidence levels, for human investigation. Assumes uncoded is installed (.uncoded/namespace.yaml and .uncoded/stubs/ present)."
 ---
 
+<!-- markdownlint-disable-file MD033 -->
+
 # Coherence Review
 
 A diagnostic sweep of a Python codebase for specific, observable symptoms of
@@ -191,7 +193,8 @@ Check systematically, not by spot-check:
 2. Cross-reference with stub import sections — any symbol imported by another
    source module is live; remove it from the candidate list. This culls the
    obvious cases cheaply.
-3. For remaining candidates, use `uncoded refs <name_path> --in <relative_path>`
+3. For remaining candidates, use
+   `uncoded refs <name_path> --in <relative_path>`
    to verify. Empty output confirms zero callers.
 4. Distinguish two sub-cases when reporting:
    - *No callers anywhere* — dead code; highest priority.
@@ -236,8 +239,9 @@ Regions with two or more findings — examine these first:
 
 **Category:** lexical | promissory | structural
 **Symptom:** concept-duplication | qualifier-accretion | vocabulary-island |
-  collision-with-drift | name-signature-mismatch | docstring-signature-mismatch |
-  docstring-name-mismatch | defensive-docstring | god-module |
+  collision-with-drift | name-signature-mismatch |
+  docstring-signature-mismatch | docstring-name-mismatch |
+  defensive-docstring | god-module |
   boundary-violation | cross-vocabulary-import | zero-caller
 **Location:** `path/to/file.py` · `ClassName/method_name`
 **Confidence:** high | medium | low
