@@ -188,7 +188,7 @@ The review works in four sweeps:
    stub; docstrings come from `uncoded body`.
 4. **Structural** — checks for boundary violations (private symbols imported
    across modules), overgrown public surfaces, cross-domain imports, and
-   zero-caller public symbols.
+   zero-reference public symbols.
 
 Output is a timestamped Markdown report saved to `.uncoded/reviews/`, with
 verbatim evidence and a confidence level (high / medium / low) for each
