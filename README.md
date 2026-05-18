@@ -33,9 +33,9 @@ written to both Claude Code and Codex skill directories (see
 `uncoded` also injects a navigation protocol into `CLAUDE.md`/`AGENTS.md`, so agents
 working in the repo pick up the instructions automatically.
 
-## Install
+## Install uv
 
-uncoded runs via [uv](https://docs.astral.sh/uv/) — install uv from the link if you don't have it. No separate uncoded install is needed; `uvx` runs it from PyPI on demand.
+uncoded runs via [uv](https://docs.astral.sh/uv/). Install uv if you don't already have it; no separate uncoded install is needed — `uvx` runs it from PyPI on demand.
 
 ## Configure
 

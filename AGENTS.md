@@ -32,7 +32,9 @@ this codebase" below for the dispatch rule.
 
 ## Commands
 
-This project uses [uv](https://docs.astral.sh/uv/). Run `uncoded` commands via `uvx` so they run the published package without needing to install it; run project tooling (`pytest`, `pre-commit`) via `uv run`.
+This project uses [uv](https://docs.astral.sh/uv/). Run `uncoded` commands
+via `uvx` so they run the published package without needing to install it;
+run project tooling (`pytest`, `pre-commit`) via `uv run`.
 
 ```
 # Generate (or update) the namespace map, stub files, and instruction-file section
