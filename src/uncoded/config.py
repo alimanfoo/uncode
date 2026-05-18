@@ -19,29 +19,6 @@ def find_pyproject_toml(start: Path) -> Path | None:
         current = parent
 
 
-def read_project_name(start: Path) -> str:
-    """Read the project name, falling back to the start-dir name.
-
-    ``start`` is the directory the upward walk for ``pyproject.toml``
-    begins from, and is also the source of the fallback name when no
-    ``pyproject.toml`` is found or its ``[project]`` table lacks a
-    ``name``. Threading ``start`` through both halves keeps the project
-    name aligned with the directory the caller is configuring; every
-    caller spells the directory explicitly so an implicit-cwd default
-    cannot drift the two halves apart.
-    """
-    base = start.resolve()
-    toml_path = find_pyproject_toml(base)
-    if toml_path is None:
-        return base.name
-    with toml_path.open("rb") as f:
-        data = tomllib.load(f)
-    try:
-        return data["project"]["name"]
-    except KeyError:
-        return base.name
-
-
 def read_source_roots(pyproject_path: Path) -> list[Path]:
     """Read source roots from ``[tool.uncoded] source-roots``.
 

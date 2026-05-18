@@ -22,10 +22,9 @@ _SECTION_BODY = """\
 ## How to read and edit code in this codebase
 
 This repo uses [uncoded](https://github.com/alimanfoo/uncoded) to maintain
-a symbol index over its source code, with three tools over that index:
-`uncoded body` for reading a symbol's body, `uncoded refs` for finding
-references, and [Serena](https://github.com/oraios/serena) for cross-symbol
-operations — renaming, editing by symbol, and safe-deleting.
+a symbol index over its source code, with two associated tools:
+`uncoded body` for reading a symbol's body and `uncoded refs` for finding
+references.
 The point of this scaffolding is one rule.
 
 ### The dispatch rule
@@ -39,12 +38,12 @@ just the first one in the session. The pretrained reflex for "find X" is
 grep, and that reflex is wrong here. `grep -rn 'def resolve_body'` to read a
 function's body is the rule firing — that is `uncoded body`. `grep -rn
 'function_name'` to check whether something has callers before a refactor is
-the rule firing — that is `uncoded refs`. `grep` then `Edit` to
-delete dead code is the rule firing — that is `safe_delete_symbol`. The grep
-version of any of these is noisier and less reliable: grep matches comments,
-strings, and unrelated attributes; grep misses re-exports (so caller and
-delete checks come back incomplete); grep forces offset arithmetic to slice a
-body. The indexed tools don't.
+the rule firing — that is `uncoded refs`. `grep` then `Edit` to delete
+dead code is the rule firing — that is `uncoded refs` to confirm dead,
+then `Edit`. The grep version of any of these is noisier and less reliable:
+grep matches comments, strings, and unrelated attributes; grep misses
+re-exports (so caller and delete checks come back incomplete); grep forces
+offset arithmetic to slice a body. The indexed tools don't.
 
 ### How to execute the rule
 
@@ -80,7 +79,7 @@ you in one. If no stub exists at the expected path, the file has no
 symbols indexed; in that narrow case, read source directly.
 
 **Step 3 — Act. Use `uncoded body` to read a symbol's body; use `uncoded refs` to find
-callers; use Serena to rename, edit, and delete symbols.**
+callers; use `Edit` (with `uncoded body`'s output as `old_string`) to change a symbol.**
 With the map and stub loaded, you have the exact `relative_path` and
 `name_path` each tool needs (`ClassName/method` for a method,
 `function_name` for a top-level function). Per task:
@@ -99,28 +98,14 @@ With the map and stub loaded, you have the exact `relative_path` and
   on other types. If the next move depends on the answer being complete,
   grep cannot give you that.
 
-- **Rename.** `rename_symbol`. Updates every reference across the
-  codebase in one call. Multi-file find-and-replace misses imports
-  and re-exports and racks up substring false positives.
+- **Edit a symbol.** `uncoded body <name_path> --in <relative_path>` gives
+  the exact `old_string`; then `Edit` to apply the change.
 
-- **Edit a symbol as a unit.** `replace_symbol_body`,
-  `insert_before_symbol`, `insert_after_symbol`. Immune to the Edit
-  tool's "string not unique" failure mode, never modify a similarly
-  named neighbour, and keep surrounding indentation consistent.
+- **Rename.** `uncoded refs <name_path> --in <relative_path>` enumerates
+  every site; then `Edit` at each.
 
-- **Delete a symbol.** `safe_delete_symbol` — not Edit, and not Edit
-  after a manual reference check. The tool fuses two operations: it
-  finds every reference, refuses to delete if any are live, and
-  removes the symbol cleanly only when it is truly dead. The two-step
-  version (find references with grep or `uncoded refs`,
-  then Edit) can drift — the reference check goes stale the moment
-  any file changes between the calls. Whenever the task is "remove
-  this symbol," regardless of how dead it looks, this is the tool.
-
-Skip `activate_project` and `check_onboarding_performed`. The project
-is already active by default, and `check_onboarding_performed` only
-gates Serena's `onboarding` flow — which writes memories that uncoded
-deliberately disables. Both calls produce only noise.
+- **Safely delete.** `uncoded refs <name_path> --in <relative_path>` must
+  return empty; then `Edit` to remove.
 
 ### Where Read, Edit, and grep are still the right tools
 
@@ -134,8 +119,7 @@ Edit, and grep stay correct:
   lookups even though they sit inside source.
 - Partial-line edits inside a symbol body, once you have retrieved it
   via `uncoded body`.
-- Environments where Serena is unavailable, or the rare stub-less
-  Python file that needs exploratory reading.
+- The rare stub-less Python file that needs exploratory reading.
 
 The dispatch rule turns on the search term: a symbol name → the index; a
 regex or free-text phrase → grep."""
