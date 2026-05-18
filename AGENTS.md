@@ -60,7 +60,7 @@ uv run pytest tests/test_stubs.py --no-cov
 ## How to read and edit code in this codebase
 
 This repo uses [uncoded](https://github.com/alimanfoo/uncoded) to maintain
-a symbol index over its source code, with two tools over that index:
+a symbol index over its source code, with two associated tools:
 `uncoded body` for reading a symbol's body and `uncoded refs` for finding
 references.
 The point of this scaffolding is one rule.
