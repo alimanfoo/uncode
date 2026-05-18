@@ -152,7 +152,9 @@ Agents following that protocol:
 2. Read the relevant `.pyi` stubs to understand imports, signatures, constants, and class members.
 3. Run `uncoded body <name_path> --in <relative_path>` when they need implementation detail for a specific symbol.
 4. Run `uncoded refs <name_path> --in <relative_path>` for impact analysis — callers, dead-symbol checks. See [Find references to a symbol](#find-references-to-a-symbol) for detail.
-5. Edit symbols using `Edit` with `uncoded body`'s output as `old_string`; rename by using `uncoded refs` to enumerate every site, then `Edit` at each; safely delete by confirming `uncoded refs` returns empty, then `Edit` to remove.
+5. Edit a symbol using `Edit` with `uncoded body`'s output as `old_string`.
+6. Rename across the codebase using `uncoded refs` to enumerate every site, then `Edit` at each.
+7. Safely delete by running `uncoded refs` first — the output must be empty — then `Edit` to remove.
 
 The split is deliberate: `uncoded` provides a stable map and signature index;
 `uncoded body` resolves the current source body; `uncoded refs` maps call
