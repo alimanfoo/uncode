@@ -78,11 +78,10 @@ function's body is the rule firing — that is `uncoded body`. `grep -rn
 'function_name'` to check whether something has callers before a refactor is
 the rule firing — that is `uncoded refs`. `grep` then `Edit` to delete
 dead code is the rule firing — that is `uncoded refs` to confirm dead,
-then `Edit`. The grep version of any of these is noisier and less
-reliable: grep matches comments,
-strings, and unrelated attributes; grep misses re-exports (so caller and
-delete checks come back incomplete); grep forces offset arithmetic to slice a
-body. The indexed tools don't.
+then `Edit`. The grep version of any of these is noisier and less reliable:
+grep matches comments, strings, and unrelated attributes; grep misses
+re-exports (so caller and delete checks come back incomplete); grep forces
+offset arithmetic to slice a body. The indexed tools don't.
 
 ### How to execute the rule
 
@@ -137,12 +136,14 @@ With the map and stub loaded, you have the exact `relative_path` and
   on other types. If the next move depends on the answer being complete,
   grep cannot give you that.
 
-- **Edit a symbol.** Use `uncoded body <name_path> --in <relative_path>`
-  to get the exact `old_string`, then `Edit` to apply the change. To
-  rename across the codebase, run `uncoded refs <name_path> --in
-  <relative_path>` to enumerate every site, then `Edit` at each. To
-  safely delete, run `uncoded refs` — the output must be empty — then
-  `Edit` to remove.
+- **Edit a symbol.** `uncoded body <name_path> --in <relative_path>` gives
+  the exact `old_string`; then `Edit` to apply the change.
+
+- **Rename.** `uncoded refs <name_path> --in <relative_path>` enumerates
+  every site; then `Edit` at each.
+
+- **Safely delete.** `uncoded refs <name_path> --in <relative_path>` must
+  return empty; then `Edit` to remove.
 
 ### Where Read, Edit, and grep are still the right tools
 
