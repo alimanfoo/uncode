@@ -126,8 +126,7 @@ With the map and stub loaded, you have the exact `relative_path` and
 `name_path` each tool needs (`ClassName/method` for a method,
 `function_name` for a top-level function). Per task:
 
-- **Read a symbol's body.**
-  `uvx uncoded body <name_path> --in <relative_path>` —
+- **Read a symbol's body.** `uvx uncoded body <name_path> --in <relative_path>` —
   prints the symbol's source text to stdout, byte-identical to disk.
   Returns exactly the symbol; no offset arithmetic, no risk of reading
   too much. Its output has every byte `Edit` needs as `old_string` — no

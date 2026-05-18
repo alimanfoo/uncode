@@ -44,8 +44,8 @@ find these disagreements — not to diagnose root cause and not to fix them.
 ## Prerequisites
 
 Verify by reading `.uncoded/namespace.yaml` — if it exists and is non-empty,
-proceed. If not, stop and tell the user to run `uvx uncoded sync`
-first; the review depends on the index.
+proceed. If not, stop and tell the user to run `uvx uncoded sync` first; the review
+depends on the index.
 
 The structural sweep uses `uncoded refs` for cross-file reference checks —
 it ships with uncoded itself and is always available when the index is present.
@@ -130,8 +130,7 @@ Examine each public symbol's name / signature / docstring triple for internal
 disagreement. Load each source file's stub once for the names and signatures
 across that file's symbols. Then, for each non-trivial public symbol (skip
 trivial one-liners and `__init__` with no meaningful body), run
-`uvx uncoded body <name_path> --in <relative_path>`
-to read the symbol's source.
+`uvx uncoded body <name_path> --in <relative_path>` to read the symbol's source.
 The docstring is at the top; the rest of the body is available for any
 finding that needs it.
 
@@ -185,9 +184,8 @@ domain; a module in domain A importing from domain B when those domains appear
 meant to be independent. Flag candidates and note the direction; let the human
 decide.
 
-**Zero-reference public symbols.** A public symbol (no leading
-underscore) with no references anywhere in the codebase.
-Either dead code or an unused API surface.
+**Zero-reference public symbols.** A public symbol (no leading underscore) with no
+references anywhere in the codebase. Either dead code or an unused API surface.
 
 Check systematically, not by spot-check:
 
@@ -195,8 +193,7 @@ Check systematically, not by spot-check:
 2. Cross-reference with stub import sections — any symbol imported by another
    source module is live; remove it from the candidate list. This culls the
    obvious cases cheaply.
-3. For remaining candidates, use
-   `uvx uncoded refs <name_path> --in <relative_path>`
+3. For remaining candidates, use `uvx uncoded refs <name_path> --in <relative_path>`
    to verify. Empty output confirms no references.
 4. Distinguish two sub-cases when reporting:
    - *No references anywhere* — dead code; highest priority.

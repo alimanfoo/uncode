@@ -154,8 +154,8 @@ Agents following that protocol:
    every reference to a symbol — callers, dead-symbol checks. See
    [Find references to a symbol](#find-references-to-a-symbol) for detail.
 5. Edit a symbol using `Edit` with `uncoded body`'s output as `old_string`.
-6. Rename across the codebase using `uncoded refs` to enumerate every
-   site, then `Edit` at each.
+6. Rename across the codebase using `uncoded refs` to enumerate every site,
+   then `Edit` at each.
 7. Safely delete by running `uncoded refs` first — the output must be
    empty — then `Edit` to remove.
 
