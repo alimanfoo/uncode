@@ -120,7 +120,7 @@ you in one. If no stub exists at the expected path, the file has no
 symbols indexed; in that narrow case, read source directly.
 
 **Step 3 — Act. Use `uncoded body` to read a symbol's body;
-use `uncoded refs` to find callers; use `Edit` (with
+use `uncoded refs` to find every reference to a symbol; use `Edit` (with
 `uncoded body`'s output as `old_string`) to change a symbol.**
 With the map and stub loaded, you have the exact `relative_path` and
 `name_path` each tool needs (`ClassName/method` for a method,
@@ -134,7 +134,7 @@ With the map and stub loaded, you have the exact `relative_path` and
   extra `Read` required for partial edits. Stay on stubs for a
   wider sweep.
 
-- **Find callers, or check whether a symbol is dead.**
+- **Find every reference to a symbol.**
   `uvx uncoded refs <name_path> --in <relative_path>`. Prints one reference
   per line as `file:line:col`, sorted. Grep on the name misses re-exports
   and adds false positives from comments, strings, and attribute lookups
