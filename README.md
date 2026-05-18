@@ -10,7 +10,7 @@ at the start of a task and navigate deterministically to what they need —
 no guessing, no grep.
 
 It also ships `uncoded body` to read symbol bodies and `uncoded refs` for
-impact analysis — callers, dead-symbol checks, pre-rename footprint.
+finding every reference to a symbol — callers, dead-symbol checks, pre-rename footprint.
 
 ## What it generates
 
@@ -134,7 +134,7 @@ uncoded refs <name_path> --in <relative_path>
 `name_path` follows the same convention as `body`: one segment for a top-level
 symbol, two for a class member (`Class/method`). Output is one reference per
 line as `<rel_path>:<line>:<col>`, with line and column 1-indexed and results
-sorted by path, then line, then column. Exits 0 on success; empty output means no callers.
+sorted by path, then line, then column. Exits 0 on success; empty output means no references.
 
 For example, to find all callers of `resolve_body`:
 
@@ -151,14 +151,14 @@ Agents following that protocol:
 1. Read `.uncoded/namespace.yaml` to orient — every symbol, at a glance.
 2. Read the relevant `.pyi` stubs to understand imports, signatures, constants, and class members.
 3. Run `uncoded body <name_path> --in <relative_path>` when they need implementation detail for a specific symbol.
-4. Run `uncoded refs <name_path> --in <relative_path>` for impact analysis — callers, dead-symbol checks. See [Find references to a symbol](#find-references-to-a-symbol) for detail.
+4. Run `uncoded refs <name_path> --in <relative_path>` to find every reference to a symbol — callers, dead-symbol checks. See [Find references to a symbol](#find-references-to-a-symbol) for detail.
 5. Edit a symbol using `Edit` with `uncoded body`'s output as `old_string`.
 6. Rename across the codebase using `uncoded refs` to enumerate every site, then `Edit` at each.
 7. Safely delete by running `uncoded refs` first — the output must be empty — then `Edit` to remove.
 
 The split is deliberate: `uncoded` provides a stable map and signature index;
-`uncoded body` resolves a symbol's source body; `uncoded refs` maps call
-sites. No grep, no stale line-number coordinates, no offset arithmetic.
+`uncoded body` resolves a symbol's source body; `uncoded refs` maps every
+reference. No grep, no stale line-number coordinates, no offset arithmetic.
 
 ## Coherence review
 

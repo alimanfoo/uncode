@@ -27,7 +27,7 @@ Two-level index:
    module constants, and class attributes.
 
 Alongside the index, uncoded ships `uncoded body` to read symbol bodies and
-`uncoded refs` to list all call sites. See "How to read and edit code in
+`uncoded refs` to find all references. See "How to read and edit code in
 this codebase" below for the dispatch rule.
 
 ## Commands
