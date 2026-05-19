@@ -1,4 +1,3 @@
-<!-- markdownlint-disable-file MD041 -->
 ## How to read and edit code in this codebase
 
 This repo uses [uncoded](https://github.com/alimanfoo/uncoded) to maintain
